@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2035
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Chip8-emu-fsharp", "Chip8-emu-fsharp\Chip8-emu-fsharp.fsproj", "{B96C085B-6E2D-45F0-8225-643E9E3845DD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B96C085B-6E2D-45F0-8225-643E9E3845DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B96C085B-6E2D-45F0-8225-643E9E3845DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B96C085B-6E2D-45F0-8225-643E9E3845DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B96C085B-6E2D-45F0-8225-643E9E3845DD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {FF5352A9-1144-4EA4-AD4C-0DA4BF14ACBF}
+	EndGlobalSection
+EndGlobal
