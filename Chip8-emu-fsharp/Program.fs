@@ -26,10 +26,17 @@ type Frame =
 // 0x000-0x1FF - Chip 8 interpreter (contains font set in emu)
 // 0x050-0x0A0 - Used for the built in 4x5 pixel font set (0-F)
 // 0x200-0xFFF - Program ROM and work RAM
+let fontset = Array.create 80 0uy
 
-let Initialize () =
+let Initialize (programBytes : byte[])=
+    let systemMemory = Array.create 4096 0uy
+    for i = 0 to 79 do
+        systemMemory.[i + 80] <- fontset.[i]
+    for i = 0 to (programBytes.Length - 1) do
+        systemMemory.[i + 512] <- programBytes.[i]
+
     {
-        Memory = (Array.create 4096 0uy);
+        Memory = systemMemory
         V = (Array.create 16 0uy);
         pc = 0x200us;
         I = 0us;
@@ -39,6 +46,7 @@ let Initialize () =
         stack = (Array.create 16 0us);
         sp = 0us;
     }
+
 let FetchFromMemory state (address: uint16 ) =
     state.Memory.[int32(address)]
     
@@ -59,14 +67,19 @@ let ExecuteCommand command state =
 let EmulateCycle state =
     let opcode = FetchOpcode (state)
     let command = DecodeOpCode opcode
-    ExecuteCommand command state
+    let state = ExecuteCommand command state
+    { state with delayTimer = Math.Max(0uy, state.delayTimer - 1uy) ; soundTimer = Math.Max(0uy, state.soundTimer - 1uy) }
 
+let PlaySound () =
+    printfn "Beep"
 
 [<EntryPoint>]
 let main argv =
-    let state = Initialize ()
-    state.Memory.[0] <- 0xA2uy
-    state.Memory.[1] <- 0xF0uy
+    let game = [|0xAFuy ; 0xF2uy|]
+
+    let state = Initialize game
     let newState = EmulateCycle state
+    if newState.soundTimer = 1uy then PlaySound ()
+
     printfn "%X" newState.I
     0 
