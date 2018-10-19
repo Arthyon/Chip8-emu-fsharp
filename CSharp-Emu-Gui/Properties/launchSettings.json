@@ -1,0 +1,35 @@
+{
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:57756/",
+      "sslPort": 0
+    }
+  },
+  "profiles": {
+"Electron.NET App": {
+"commandName": "Executable",
+"executablePath": "C:\\Program Files\\dotnet\\dotnet.exe",
+"commandLineArgs": "electronize start"
+},
+
+    "IIS Express": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "launchUrl": "api/values",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
+    "CSharp_Emu_Gui": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "api/values",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "http://localhost:57757/"
+    }
+  }
+}
