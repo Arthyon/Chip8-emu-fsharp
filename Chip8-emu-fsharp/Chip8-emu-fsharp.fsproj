@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="Pong.ch8" />
+    <None Include="TestApplication.ch8" />
   </ItemGroup>
 
 </Project>

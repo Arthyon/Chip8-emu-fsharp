@@ -2,7 +2,7 @@
   "profiles": {
     "Chip8-emu-fsharp": {
       "commandName": "Project",
-      "commandLineArgs": "C:\\Source\\internal\\Chip8-emu-fsharp\\Chip8-emu-fsharp\\Pong.ch8"
+      "commandLineArgs": "C:\\Source\\internal\\Chip8-emu-fsharp\\Chip8-emu-fsharp\\TestApplication.ch8"
     }
   }
 }

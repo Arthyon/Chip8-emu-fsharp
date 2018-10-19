@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "main": "dist/index.js",
   "scripts": {
-    "start": "electron .",
+    "start": "yarn build && electron .",
     "build": "cross-env tsc -p ."
   },
   "devDependencies": {

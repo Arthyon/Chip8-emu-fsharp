@@ -60,8 +60,8 @@ let DecodeOpCode (opcode: Opcode) =
 let ExecuteCommand state command =
     match command with
     | SetIndex idx      -> { state with I = idx ; pc = state.pc + 2us }, Computational
-    | Unknown opcode    -> { state with terminating = true, sprintf "Terminating because of unknown opcode %X" opcode }, Computational
     | ClearScreen       -> { state with gfx = (Array.create 2048 false) }, Drawable
+    | Unknown opcode    -> { state with terminating = true, sprintf "Terminating because of unknown opcode %X" opcode }, Computational
 
 let UpdateTimers frame =
     let state, frameType = frame

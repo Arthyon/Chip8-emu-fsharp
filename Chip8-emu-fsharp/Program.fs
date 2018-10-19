@@ -36,17 +36,37 @@ let rec RunGameLoop previousInput (previousStates: State list) state =
                                 | head::tail    ->  RunGameLoop input tail head
                                 | []            ->  RunGameLoop input previousStates state
         | Exit              ->  state, previousStates
+
+let rec ValidateRom (program: byte[]) pos =
+    if pos > program.Length - 2 
+    then None
+    else
+
+    let leftPart = uint16(program.[pos])
+    let rightPart = uint16(program.[pos + 1])
+    let opcode = (leftPart <<< 8) ||| rightPart
+    match DecodeOpCode opcode with
+    | Unknown code  -> if code <> 0x000us // Predetermined termination opcode during dev
+                       then Some (sprintf "Program contains unhandled opcode %X" code)
+                       else None
+    | _             -> ValidateRom program (pos + 2)
                 
 [<EntryPoint>]
 let main argv =
     if argv.Length = 0 && not (File.Exists argv.[0]) then failwith "Invalid path"
 
     let game = File.ReadAllBytes argv.[0]
-    let initialState = Initialization.Initialize game
+    let validationResult = ValidateRom game 0
+    if validationResult.IsSome 
+    then 
+        printfn "%s" validationResult.Value
+        0
+    else
+        let initialState = Initialization.Initialize game
 
-    let endstate, _ = initialState |> RunGameLoop Initialization.initialInput []
+        let endstate, _ = initialState |> RunGameLoop Initialization.initialInput []
 
-    let _, terminationReason = endstate.terminating
-    printf "%s" terminationReason
-    printf "Last state of I: %X" endstate.I
-    0 
+        let _, terminationReason = endstate.terminating
+        printfn "%s" terminationReason
+        printfn "Last state of I: %X" endstate.I
+        0 
