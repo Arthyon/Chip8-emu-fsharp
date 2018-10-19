@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "strictNullChecks": true,
+    "module": "commonjs",
+    "target": "ES2017",
+    "sourceMap": true,
+    "lib": ["es2017", "es2016", "dom"],
+    "alwaysStrict": true,
+    "noUnusedLocals": true,
+    "outDir": "dist"
+  },
+  "include": ["src/**/*"],
+  "allowJs": false
+}
