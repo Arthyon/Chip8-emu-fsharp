@@ -1,4 +1,5 @@
-﻿open Chip8
+﻿module Program
+open Chip8
 open Initialization
 open System.IO
 open System
@@ -51,16 +52,14 @@ let rec ValidateRom (program: byte[]) pos =
                        else None
     | _             -> ValidateRom program (pos + 2)
                 
-[<EntryPoint>]
-let main argv =
-    if argv.Length = 0 && not (File.Exists argv.[0]) then failwith "Invalid path"
+let main file =
+    if not (File.Exists file) then failwith "Invalid path"
 
-    let game = File.ReadAllBytes argv.[0]
+    let game = File.ReadAllBytes file
     let validationResult = ValidateRom game 0
     if validationResult.IsSome 
     then 
-        printfn "%s" validationResult.Value
-        0
+        sprintf "%s" validationResult.Value
     else
         let initialState = Initialization.Initialize game
 
@@ -68,5 +67,4 @@ let main argv =
 
         let _, terminationReason = endstate.terminating
         printfn "%s" terminationReason
-        printfn "Last state of I: %X" endstate.I
-        0 
+        sprintf "Last state of I: %X" endstate.I

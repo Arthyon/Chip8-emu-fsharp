@@ -1,4 +1,4 @@
-namespace Emu_Gui
+namespace EmuGui
 
 open System
 open System.Collections.Generic

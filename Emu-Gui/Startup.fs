@@ -1,24 +1,25 @@
-namespace Emu_Gui
+namespace EmuGui
 
-open System
-open System.Collections.Generic
-open System.Linq
-open System.Threading.Tasks
 open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Hosting
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
 open ElectronNET.API
+open ElectronNET.API.Entities
 
 
 type Startup private () =
     new (configuration: IConfiguration) as this =
         Startup() then
         this.Configuration <- configuration
-    member this.StartElectron =
+
+    member this.ElectronBootstrap =
         async {
-            do! (Electron.WindowManager.CreateWindowAsync ()) |> Async.AwaitTask |> Async.Ignore
+            let! browserWindow = Electron.WindowManager.CreateWindowAsync (new BrowserWindowOptions(Show = false)) |> Async.AwaitTask
+            browserWindow.add_OnReadyToShow( fun _ -> browserWindow.Show());
+            browserWindow.SetTitle("Chip 8 Emulator")
         }
+
     // This method gets called by the runtime. Use this method to add services to the container.
     member this.ConfigureServices(services: IServiceCollection) =
         // Add framework services.
@@ -26,7 +27,11 @@ type Startup private () =
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
     member this.Configure(app: IApplicationBuilder, env: IHostingEnvironment) =
-        app.UseMvc() |> ignore
-        Async.Start(this.StartElectron)
+        app.UseStaticFiles() |> ignore
+        app.UseMvc(fun routes -> 
+            routes.MapRoute(name = "default", template= "{controller=Home}/{action=Index}/{id?}") |> ignore
+        ) |> ignore
+        if HybridSupport.IsElectronActive
+        then Async.Start(this.ElectronBootstrap)
 
     member val Configuration : IConfiguration = null with get, set

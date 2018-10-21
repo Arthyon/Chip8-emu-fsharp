@@ -25,7 +25,7 @@ type State = {
 
 type Command =
 | SetIndex of uint16
-//| ReturnFromSubroutine
+// | ReturnFromSubroutine
 | ClearScreen
 | Unknown of uint16
 
