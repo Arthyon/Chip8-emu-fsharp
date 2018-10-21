@@ -1,1 +1,14 @@
 <h1></h1>
+<p id="status"></p>
+<script>
+const { ipcRenderer } = require("electron");
+
+
+ipcRenderer.on('status', (event, arg) => {
+    document.getElementById('status').innerHTML = arg;
+});
+
+ipcRenderer.on('update-gfx', (event, arg) => {
+    console.log("GFX", arg);
+});
+</script>

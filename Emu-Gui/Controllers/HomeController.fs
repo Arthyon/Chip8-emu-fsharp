@@ -8,6 +8,7 @@ open Microsoft.AspNetCore.Mvc
 open ElectronNET.API
 open ElectronNET.API.Entities
 open Program
+open ElectronNET.API
 // Game loop:
 // in JS: SetInterval, fetch pressed keys and send via ipc
 //  OR
@@ -20,9 +21,14 @@ type Home () =
     inherit Controller()
 
     member this.Index() =
-        if HybridSupport.IsElectronActive then this.InitializeMenu ()
+        if HybridSupport.IsElectronActive then this.Initialize ()
+
 
         this.View()
+
+    member this.Initialize() =
+        this.InitializeMenu () |> ignore
+        ()
 
     member this.InitializeMenu() =
         let menu = [|
@@ -32,7 +38,14 @@ type Home () =
                     new MenuItem (Label = "Open", Accelerator = "CmdOrCtrl+O", Click = fun _ -> Async.Start(this.OpenFile ()))
                 |]
             )
+            new MenuItem(
+                Label = "Dev",
+                Submenu = [|
+                    new MenuItem (Label = "Dev console", Accelerator = "F12", Click = fun _ -> Electron.WindowManager.BrowserWindows.First().WebContents.OpenDevTools())
+                |]
+            )
         |]
+        
         Electron.Menu.SetApplicationMenu(menu)
         ()
 
@@ -45,6 +58,5 @@ type Home () =
             )
         async {
             let! file = Electron.Dialog.ShowOpenDialogAsync (mainWindow, options) |> Async.AwaitTask
-            let status = main file.[0]
-            ()
+            EmuGui.EmuWrapper.Instance.Load file.[0]
         }
