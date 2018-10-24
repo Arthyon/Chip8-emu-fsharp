@@ -5,32 +5,26 @@ open System.IO
 open System
 
 
-let TryPlaySound state =
-    if state.soundTimer = 1uy 
-    then printfn "Beep"
+//let TryPlaySound state =
+//    if state.soundTimer = 1uy 
+//    then printfn "Beep"
 
-let NextFrame state keys sendState =
-    let newState, frameType = EmulateCycle state keys
-    match frameType with
-    | Computational -> TryPlaySound newState
-                       newState
-    | Drawable      -> TryPlaySound newState
-                       sendState newState
-                       newState
+//let NextFrame state keys sendState =
+//    let newState, frameType = EmulateCycle state keys
+//    match frameType with
+//    | Computational -> TryPlaySound newState
+//                       newState
+//    | Drawable      -> TryPlaySound newState
+//                       sendState newState
+//                       newState
 
-let rec RunGameLoop previousInput (previousStates: State list) getCurrentInput sendState state =
-    if fst state.terminating 
-    then state, previousStates
-    else
-        let input = getCurrentInput previousInput
-        match input with
-        | NormalPlay keys   ->  NextFrame state keys sendState
-                                |> RunGameLoop input (state::previousStates) getCurrentInput sendState
-        | Pause             ->  RunGameLoop input previousStates getCurrentInput sendState state
-        | Rewind            ->  match previousStates with
-                                | head::tail    ->  RunGameLoop input tail getCurrentInput sendState head
-                                | []            ->  RunGameLoop input previousStates getCurrentInput sendState state
-        | Exit              ->  state, previousStates
+let StepGameLoop (previousStates: State list) input state =
+    match input with
+    | NormalPlay keys   ->  let newState = EmulateCycle state keys
+                            (state::previousStates), newState
+    | Rewind            ->  match previousStates with
+                            | head::tail    ->  tail, head
+                            | []            ->  previousStates, state
 
 let rec ValidateRom (program: byte[]) pos =
     if pos > program.Length - 2 
@@ -46,7 +40,8 @@ let rec ValidateRom (program: byte[]) pos =
                        else None
     | _             -> ValidateRom program (pos + 2)
                 
-let Run bytes getInput sendGfx =
+let InitEmu bytes =
     let initialState = Initialization.Initialize bytes
+    let initialInput = Initialization.initialInput
 
-    initialState |> RunGameLoop Initialization.initialInput [] getInput sendGfx
+    initialState |> StepGameLoop [] initialInput

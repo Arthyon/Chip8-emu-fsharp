@@ -18,4 +18,5 @@
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.9" />
     <DotNetCliToolReference Include="ElectronNET.CLI" Version="0.0.9" />
   </ItemGroup>
+  <ItemGroup />
 </Project>

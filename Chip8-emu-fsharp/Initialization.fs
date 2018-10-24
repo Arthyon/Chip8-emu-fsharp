@@ -38,6 +38,7 @@ module Initialization =
             soundTimer = 0uy;
             stack = (Array.create 16 0us);
             sp = 0us;
+            frameType = Computational;
             terminating = false, ""
         }
 

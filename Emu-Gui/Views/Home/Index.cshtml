@@ -1,14 +1,58 @@
-<h1></h1>
 <p id="status"></p>
+<p id="fail"></p>
+
+
 <script>
-const { ipcRenderer } = require("electron");
+    const { ipcRenderer } = require("electron");
+    // Send keypress
+    var now,
+        dt = 0,
+        last = window.performance.now,
+        step = 1 / 60,
+        slow = 1; // slow motion scaling factor (5 = 5 times slower)
 
+    var isPaused = true;
 
-ipcRenderer.on('status', (event, arg) => {
-    document.getElementById('status').innerHTML = arg;
-});
+    document.addEventListener('keydown', (event) => {
+        console.log("down:", event);
+    });
+    document.addEventListener('keyup', (event) => {
+        console.log("up:", event);
+    });
 
-ipcRenderer.on('update-gfx', (event, arg) => {
-    console.log("GFX", arg);
-});
+    function run(timestamp) {
+        if (isPaused) return;
+
+        now = window.performance.now();
+        dt = dt + Math.min(1, (now - last) / 1000);
+        let slowStep = (step * slow);
+        while (dt > slowStep) {
+            if (isPaused) break;
+            dt = dt - slowStep;
+            ipcRenderer.send('tick', step);
+        }
+        last = now
+        window.requestAnimationFrame(run);
+    }
+    ipcRenderer.on('failure', (event, arg) => {
+        isPaused = true;
+        document.getElementById('fail').innerHTML = arg;
+
+    });
+    ipcRenderer.on('status', (event, arg) => {
+        document.getElementById('status').innerHTML = arg;
+    });
+
+    ipcRenderer.on('beep', (event, arg) => {
+    });
+
+    ipcRenderer.on('start', (event, arg) => {
+        isPaused = false;
+        last = window.performance.now();
+        window.requestAnimationFrame(run);
+    });
+
+    ipcRenderer.on('update-gfx', (event, arg) => {
+        console.log("GFX", arg);
+    });
 </script>

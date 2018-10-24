@@ -3,28 +3,48 @@ namespace EmuGui
     open System.IO
     open ElectronNET.API
     open System
+    open Chip8
 
     type EmuWrapper private () =
-        let currentKeys = Initialization.Initialization.initialInput
-
-        let isPaused = false
         let mainWindow = Electron.WindowManager.BrowserWindows |> Seq.head
+
+        let currentKeys = Initialization.Initialization.initialInput
+        let mutable currentState = None
+        let mutable previousStates = []
 
         let updateCurrentKeys arg =
             ()
         
-        let getCurrentInput previousInput =
-            Chip8.KeyInput.Pause
-            // if isPaused 
-            // then Chip8.KeyInput.Pause
-            // else currentKeys
-
         let updateStatus (statusMsg: string) =
             Electron.IpcMain.Send(mainWindow, "status", statusMsg)
 
-        let handleState (state: Chip8.State) =
+        let draw (state: Chip8.State) =
             Electron.IpcMain.Send(mainWindow, "update-gfx", state.gfx |> Seq.map (fun p -> if p then 255 else 0))
         
+        let TryPlaySound state =
+            if state.soundTimer = 1uy 
+            then Electron.IpcMain.Send(mainWindow, "beep", "")
+        
+        let fail (msg: string) =
+            Electron.IpcMain.Send(mainWindow, "failure", msg)
+            
+
+        let UpdateState () =
+            match currentState with
+            | None      ->  updateStatus "Emu not initialized"
+            | Some s    ->  let prevStates, newState = StepGameLoop previousStates currentKeys s
+                            if fst newState.terminating 
+                            then
+                                fail (sprintf "Failure: %s" <| snd newState.terminating)
+                                currentState <- None
+                            else
+                                currentState <- Some newState
+                                previousStates <- prevStates
+                                TryPlaySound newState
+                                match newState.frameType with
+                                | FrameType.Drawable        -> draw newState
+                                | FrameType.Computational   -> ()
+
         static let instance = EmuWrapper ()
         static member Instance = instance
 
@@ -33,10 +53,17 @@ namespace EmuGui
             let bytes = File.ReadAllBytes path
             let validationResult = ValidateRom bytes 0
             match validationResult with
-            | Some s    -> Electron.Dialog.ShowErrorBox("Error loading rom", s)
+            | Some s    -> fail (sprintf "Error loading rom: %s" s)
             | None      -> this.InitializeSession bytes
 
         member this.InitializeSession bytes =
             updateStatus "Initializing"
+            Electron.IpcMain.RemoveAllListeners("keypress");
+            Electron.IpcMain.RemoveAllListeners("tick");
             Electron.IpcMain.On("keypress", fun args -> updateCurrentKeys args)
-            Run bytes getCurrentInput handleState |> ignore
+            Electron.IpcMain.On("tick", fun _ -> UpdateState ())
+            let prevStates, state = InitEmu bytes 
+            currentState <- Some state
+            previousStates <- prevStates
+            updateStatus "Running"
+            Electron.IpcMain.Send(mainWindow, "start", "")

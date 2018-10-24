@@ -20,6 +20,7 @@ type State = {
     soundTimer: uint8;
     stack: array<uint16>; // 16
     sp: uint16;
+    frameType: FrameType;
     terminating: bool * string;
 }
 
@@ -34,9 +35,7 @@ type Frame = State * FrameType
 
 type KeyInput =
 | NormalPlay of uint8 []
-| Pause
 | Rewind
-| Exit
 
 let FetchFromMemory state (address: uint16 ) =
     state.Memory.[int32(address)]
@@ -59,13 +58,12 @@ let DecodeOpCode (opcode: Opcode) =
 
 let ExecuteCommand state command =
     match command with
-    | SetIndex idx      -> { state with I = idx ; pc = state.pc + 2us }, Computational
-    | ClearScreen       -> { state with gfx = (Array.create 2048 false) }, Drawable
-    | Unknown opcode    -> { state with terminating = true, sprintf "Terminating because of unknown opcode %X" opcode }, Computational
+    | SetIndex idx      -> { state with I = idx ; pc = state.pc + 2us; frameType = Computational}
+    | ClearScreen       -> { state with gfx = (Array.create 2048 false); frameType = Drawable } 
+    | Unknown opcode    -> { state with terminating = true, sprintf "Terminating because of unknown opcode %X" opcode }
 
-let UpdateTimers frame =
-    let state, frameType = frame
-    { state with delayTimer = Math.Max(0uy, state.delayTimer - 1uy) ; soundTimer = Math.Max(0uy, state.soundTimer - 1uy) }, frameType    
+let UpdateTimers state =
+    { state with delayTimer = Math.Max(0uy, state.delayTimer - 1uy) ; soundTimer = Math.Max(0uy, state.soundTimer - 1uy) }
 
 let EmulateCycle state keys =
     FetchOpcode state
