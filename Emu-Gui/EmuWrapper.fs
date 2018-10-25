@@ -2,21 +2,19 @@ namespace EmuGui
     open Program
     open System.IO
     open ElectronNET.API
-    open System
     open Chip8
+    open Newtonsoft.Json.Linq
 
     type EmuWrapper private () =
         let mainWindow = Electron.WindowManager.BrowserWindows |> Seq.head
 
-        let currentKeys = Initialization.Initialization.initialInput
         let mutable currentState = None
         let mutable previousStates = []
 
-        let updateCurrentKeys arg =
-            ()
-        
         let updateStatus (statusMsg: string) =
             Electron.IpcMain.Send(mainWindow, "status", statusMsg)
+        let console (object: obj)=
+            Electron.IpcMain.Send(mainWindow, "console", (sprintf "%A" object))
 
         let draw (state: Chip8.State) =
             Electron.IpcMain.Send(mainWindow, "update-gfx", state.gfx |> Seq.map (fun p -> if p then 255 else 0))
@@ -29,14 +27,15 @@ namespace EmuGui
             Electron.IpcMain.Send(mainWindow, "failure", msg)
             
 
-        let UpdateState () =
+        let UpdateState currentKeys =
             match currentState with
             | None      ->  updateStatus "Emu not initialized"
             | Some s    ->  let prevStates, newState = StepGameLoop previousStates currentKeys s
                             if fst newState.terminating 
                             then
-                                fail (sprintf "Failure: %s" <| snd newState.terminating)
-                                currentState <- None
+                                ()
+                                //fail (sprintf "Failure: %s" <| snd newState.terminating)
+                                //currentState <- None
                             else
                                 currentState <- Some newState
                                 previousStates <- prevStates
@@ -44,6 +43,12 @@ namespace EmuGui
                                 match newState.frameType with
                                 | FrameType.Drawable        -> draw newState
                                 | FrameType.Computational   -> ()
+
+        let keyArrayToKeyInput (object : obj) =
+            let arr =   match object with
+                        | :? JArray as a -> a |> Seq.map (fun v -> uint8(v))|> Seq.toArray
+                        | _              -> [||]
+            KeyInput.NormalPlay arr
 
         static let instance = EmuWrapper ()
         static member Instance = instance
@@ -58,10 +63,8 @@ namespace EmuGui
 
         member this.InitializeSession bytes =
             updateStatus "Initializing"
-            Electron.IpcMain.RemoveAllListeners("keypress");
             Electron.IpcMain.RemoveAllListeners("tick");
-            Electron.IpcMain.On("keypress", fun args -> updateCurrentKeys args)
-            Electron.IpcMain.On("tick", fun _ -> UpdateState ())
+            Electron.IpcMain.On("tick", fun keys -> UpdateState (keyArrayToKeyInput keys))
             let prevStates, state = InitEmu bytes 
             currentState <- Some state
             previousStates <- prevStates
