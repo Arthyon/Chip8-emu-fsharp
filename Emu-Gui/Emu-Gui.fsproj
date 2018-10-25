@@ -8,6 +8,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="wwwroot\Scripts\screen.js" />
     <Compile Include="EmuWrapper.fs" />
     <Compile Include="Controllers/HomeController.fs" />
     <Compile Include="Startup.fs" />
@@ -18,5 +19,4 @@
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.9" />
     <DotNetCliToolReference Include="ElectronNET.CLI" Version="0.0.9" />
   </ItemGroup>
-  <ItemGroup />
 </Project>
