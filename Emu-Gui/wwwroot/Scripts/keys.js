@@ -53,6 +53,8 @@ function handleInput(key, value) {
         case "v":
             idx = 15;
             break;
+        case "b":
+            return { pauseButton: false, rewindButton: true };
         case " ":
             return { pauseButton: true, rewindButton: false };
     }

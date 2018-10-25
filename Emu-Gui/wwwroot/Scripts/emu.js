@@ -6,6 +6,7 @@ var now,
     slow = 1; // slow motion scaling factor (5 = 5 times slower)
 
 var isPaused = true;
+var rewind = false;
 
 
 document.addEventListener('keydown', (event) => {
@@ -15,11 +16,16 @@ document.addEventListener('keydown', (event) => {
             start()
         else
             isPaused = true;
+    } else if (res.rewindButton) {
+        rewind = true;
     }
 });
 
 document.addEventListener('keyup', (event) => {
     const res = handleInput(event.key, 0);
+    if (res.rewindButton) {
+        rewind = false;
+    }
 });
 
 function run(timestamp) {
@@ -31,7 +37,7 @@ function run(timestamp) {
     while (dt > slowStep) {
         if (isPaused) break;
         dt = dt - slowStep;
-        ipcRenderer.send('tick', keys);
+        ipcRenderer.send('tick', { keys, rewind });
     }
     last = now
     window.requestAnimationFrame(run);

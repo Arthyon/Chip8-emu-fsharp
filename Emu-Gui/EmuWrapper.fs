@@ -5,6 +5,11 @@ namespace EmuGui
     open Chip8
     open Newtonsoft.Json.Linq
 
+    type Input = {
+        keys: array<uint8>;
+        rewind: bool;
+    }
+
     type EmuWrapper private () =
         let mainWindow = Electron.WindowManager.BrowserWindows |> Seq.head
 
@@ -13,13 +18,14 @@ namespace EmuGui
 
         let updateStatus (statusMsg: string) =
             Electron.IpcMain.Send(mainWindow, "status", statusMsg)
-        let console (object: obj)=
+
+        let console (object: obj) =
             Electron.IpcMain.Send(mainWindow, "console", (sprintf "%A" object))
 
         let draw (state: Chip8.State) =
             Electron.IpcMain.Send(mainWindow, "update-gfx", state.gfx |> Seq.map (fun p -> if p then 255 else 0))
         
-        let TryPlaySound state =
+        let tryPlaySound state =
             if state.soundTimer = 1uy 
             then Electron.IpcMain.Send(mainWindow, "beep", "")
         
@@ -27,7 +33,8 @@ namespace EmuGui
             Electron.IpcMain.Send(mainWindow, "failure", msg)
             
 
-        let UpdateState currentKeys =
+        let updateState currentKeys =
+            console currentKeys
             match currentState with
             | None      ->  updateStatus "Emu not initialized"
             | Some s    ->  let prevStates, newState = StepGameLoop previousStates currentKeys s
@@ -39,16 +46,18 @@ namespace EmuGui
                             else
                                 currentState <- Some newState
                                 previousStates <- prevStates
-                                TryPlaySound newState
+                                tryPlaySound newState
                                 match newState.frameType with
                                 | FrameType.Drawable        -> draw newState
                                 | FrameType.Computational   -> ()
 
-        let keyArrayToKeyInput (object : obj) =
-            let arr =   match object with
-                        | :? JArray as a -> a |> Seq.map (fun v -> uint8(v))|> Seq.toArray
-                        | _              -> [||]
-            KeyInput.NormalPlay arr
+        let toKeyInput (object : obj) =
+            match object with
+                | :? JObject as a   ->  let input = a.ToObject<Input>()
+                                        if input.rewind 
+                                        then KeyInput.Rewind
+                                        else KeyInput.NormalPlay input.keys
+                | _                 ->  KeyInput.NormalPlay [||]
 
         static let instance = EmuWrapper ()
         static member Instance = instance
@@ -64,7 +73,7 @@ namespace EmuGui
         member this.InitializeSession bytes =
             updateStatus "Initializing"
             Electron.IpcMain.RemoveAllListeners("tick");
-            Electron.IpcMain.On("tick", fun keys -> UpdateState (keyArrayToKeyInput keys))
+            Electron.IpcMain.On("tick", fun args -> updateState (toKeyInput args))
             let prevStates, state = InitEmu bytes 
             currentState <- Some state
             previousStates <- prevStates

@@ -35,7 +35,8 @@ type Home () =
             new MenuItem(
                 Label = "File", 
                 Submenu = [|
-                    new MenuItem (Label = "Open", Accelerator = "CmdOrCtrl+O", Click = fun _ -> Async.Start(this.OpenFile ()))
+                    new MenuItem (Label = "Open ROM", Accelerator = "CmdOrCtrl+O", Click = fun _ -> Async.Start(this.OpenFile ()))
+                    new MenuItem (Label = "Exit", Accelerator = "CmdOrCtrl+Q", Click = fun _ -> Electron.App.Quit())
                 |]
             )
             new MenuItem(
