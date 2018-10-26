@@ -6,6 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Models.fs" />
+    <Compile Include="OpcodeHandler.fs" />
     <Compile Include="Chip8.fs" />
     <Compile Include="Initialization.fs" />
     <Compile Include="Program.fs" />
