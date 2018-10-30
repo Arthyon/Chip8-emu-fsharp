@@ -78,3 +78,13 @@ let hBitAnd x y state =
 let hBitOr x y state =
     state.V.[x] <- state.V.[x] ||| state.V.[y]
     state
+
+let hBitshiftLeft x state =
+    state.V.[0xF] <- state.V.[x] >>> 7
+    state.V.[x] <- state.V.[x] <<< 1
+    state
+
+let hBitshiftRight x state =
+    state.V.[0xF] <- state.V.[x] &&& 1uy
+    state.V.[x] <- state.V.[x] >>> 1
+    state

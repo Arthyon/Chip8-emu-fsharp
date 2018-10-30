@@ -94,6 +94,8 @@ let ExecuteCommand state command =
     | AddToIndex idx                -> (fun s -> { s with I = s.I + uint16(s.V.[idx]) }) >> incrementPc
     | BitAnd (x , y)                -> mutateRegister >> hBitAnd x y >> incrementPc
     | BitOr (x , y)                 -> mutateRegister >> hBitOr x y >> incrementPc
+    | BitShiftLeft x                -> mutateRegister >> hBitshiftLeft x >> incrementPc
+    | BitShiftRight x               -> mutateRegister >> hBitshiftRight x >> incrementPc
     | Unknown opcode                -> fun s -> { s with terminating = true, sprintf "Terminating because of unknown opcode %X" opcode }
     <| state
 

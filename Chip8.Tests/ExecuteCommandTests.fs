@@ -180,3 +180,51 @@ let ``BitOr. ORs VX and VY, stores in VX and increments pc`` () =
 
     ExecuteCommand state (BitOr (2, 5))
     |> should equal expectedState
+
+[<Fact>]
+let ``BitshiftLeft. Stores MSB in VF, shifts VX left when MSB is 1`` () =
+    let state = mutateRegister initialState
+    state.V.[0] <- 0xEBuy
+    state.V.[0xF] <- 0uy
+
+    let expectedState = { (mutateRegister state) with pc = state.pc + 2us }
+    expectedState.V.[0] <- 0xD6uy
+    expectedState.V.[0xF] <- 1uy
+    ExecuteCommand state (BitShiftLeft 0)
+    |>should equal expectedState
+    
+[<Fact>]
+let ``BitshiftLeft. Stores MSB in VF, shifts VX left when MSB is 0`` () =
+    let state = mutateRegister initialState
+    state.V.[0] <- 0x64uy
+    state.V.[0xF] <- 1uy
+
+    let expectedState = { (mutateRegister state) with pc = state.pc + 2us }
+    expectedState.V.[0] <- 0xC8uy
+    expectedState.V.[0xF] <- 0uy
+    ExecuteCommand state (BitShiftLeft 0)
+    |>should equal expectedState
+
+[<Fact>]
+let ``BitshiftRight. Stores LSB in VF, shifts VX right when LSB is 1`` () =
+    let state = mutateRegister initialState
+    state.V.[0] <- 0xEBuy
+    state.V.[0xF] <- 0uy
+
+    let expectedState = { (mutateRegister state) with pc = state.pc + 2us }
+    expectedState.V.[0] <- 0x75uy
+    expectedState.V.[0xF] <- 1uy
+    ExecuteCommand state (BitShiftRight 0)
+    |>should equal expectedState
+
+[<Fact>]
+let ``BitshiftRight. Stores LSB in VF, shifts VX right when LSB is 0`` () =
+    let state = mutateRegister initialState
+    state.V.[0] <- 0xECuy
+    state.V.[0xF] <- 1uy
+
+    let expectedState = { (mutateRegister state) with pc = state.pc + 2us }
+    expectedState.V.[0] <- 0x76uy
+    expectedState.V.[0xF] <- 0uy
+    ExecuteCommand state (BitShiftRight 0)
+    |>should equal expectedState
