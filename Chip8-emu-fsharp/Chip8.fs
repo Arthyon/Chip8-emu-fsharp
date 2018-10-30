@@ -50,7 +50,7 @@ let DecodeNestedOpCode (opcode: Opcode) keys =
     | 0xE09Eus  -> KeyPressed ((toX opcode) , keys) 
     | 0xE0A1us  -> KeyNotPressed ((toX opcode), keys)
     | 0xF007us  -> GetTimer (toX opcode)
-    | 0xF00Aus  -> KeyPressBlocking (toX opcode)
+    | 0xF00Aus  -> KeyPressBlocking (toX opcode, keys)
     | 0xF015us  -> SetTimer (toX opcode)
     | 0xF018us  -> SetSound (toX opcode)
     | 0xF01Eus  -> AddToIndex (toX opcode)
@@ -62,7 +62,7 @@ let DecodeNestedOpCode (opcode: Opcode) keys =
 
 let DecodeOpCode keys (opcode: Opcode) =
     match opcode &&& 0xF000us with
-    | 0x1000us -> Goto (toNNN opcode)
+    | 0x1000us -> Jump (toNNN opcode)
     | 0x2000us -> JumpToSubroutine (toNNN opcode)
     | 0x3000us -> SkipIfTrue (toXNN opcode)
     | 0x4000us -> SkipIfFalse (toXNN opcode)
@@ -71,7 +71,7 @@ let DecodeOpCode keys (opcode: Opcode) =
     | 0x7000us -> AddNoCarry (toXNN opcode)
     | 0x9000us -> SkipIfRegisterNotEq (toXY opcode)
     | 0xA000us -> SetIndex (toNNN opcode)
-    | 0xB000us -> Jump (toNNN opcode)
+    | 0xB000us -> JumpRelative (toNNN opcode)
     | 0xC000us -> Rand (toXNN opcode)
     | 0xD000us -> DrawSprite (toXYN opcode)
     | _        -> DecodeNestedOpCode opcode keys
@@ -79,7 +79,7 @@ let DecodeOpCode keys (opcode: Opcode) =
 let ExecuteCommand state command =
     match command with
     | SetIndex idx                  -> (fun s -> { s with I = idx }) >> incrementPc
-    | Goto value                    -> (fun s ->  { s with pc = value })
+    | Jump value                    -> (fun s ->  { s with pc = value })
     | JumpToSubroutine value        -> mutateStack >> hJumpToSubroutine value
     | SkipIfTrue (addr, value)      -> hSkipIfTrue addr value
     | SkipIfFalse (addr, value)     -> hSkipIfFalse addr value

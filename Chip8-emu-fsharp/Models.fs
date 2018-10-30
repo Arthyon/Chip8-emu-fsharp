@@ -27,7 +27,7 @@ type Command =
 | JumpToSubroutine of uint16
 | BinaryCode of int
 | ReturnFromSubroutine
-| Goto of uint16
+| Jump of uint16
 | SkipIfTrue of int * uint8
 | SkipIfFalse of int * uint8
 | SkipIfRegisterEq of int * int
@@ -44,13 +44,13 @@ type Command =
 | BitShiftLeft of int
 | SkipIfRegisterNotEq of int * int
 | SetIndex of uint16
-| Jump of uint16
+| JumpRelative of uint16
 | Rand of int * uint8
 | DrawSprite of int * int * uint8
 | KeyPressed of int * uint8[]
 | KeyNotPressed of int * uint8[]
 | GetTimer of int
-| KeyPressBlocking of int
+| KeyPressBlocking of int * uint8[]
 | SetTimer of int
 | SetSound of int
 | AddToIndex of int

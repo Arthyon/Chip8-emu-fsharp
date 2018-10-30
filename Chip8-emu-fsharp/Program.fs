@@ -1,22 +1,7 @@
 ﻿module Program
+
 open Chip8
 open Initialization
-open System.IO
-open System
-
-
-//let TryPlaySound state =
-//    if state.soundTimer = 1uy 
-//    then printfn "Beep"
-
-//let NextFrame state keys sendState =
-//    let newState, frameType = EmulateCycle state keys
-//    match frameType with
-//    | Computational -> TryPlaySound newState
-//                       newState
-//    | Drawable      -> TryPlaySound newState
-//                       sendState newState
-//                       newState
 
 let StepGameLoop (previousStates: State list) input state =
     match input with
@@ -34,7 +19,8 @@ let rec ValidateRom (program: byte[]) pos =
     let leftPart = uint16(program.[pos])
     let rightPart = uint16(program.[pos + 1])
     let opcode = (leftPart <<< 8) ||| rightPart
-    match DecodeOpCode opcode with
+    let emptyInput = Array.create 16 0uy
+    match DecodeOpCode emptyInput opcode with
     | Unknown code  -> if code <> 0x000us // Predetermined termination opcode during dev
                        then Some (sprintf "Program contains unhandled opcode %X" code)
                        else None

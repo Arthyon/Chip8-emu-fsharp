@@ -22,7 +22,7 @@ namespace EmuGui
         let console (object: obj) =
             Electron.IpcMain.Send(mainWindow, "console", (sprintf "%A" object))
 
-        let draw (state: Chip8.State) =
+        let draw (state: State) =
             Electron.IpcMain.Send(mainWindow, "update-gfx", state.gfx |> Seq.map (fun p -> if p then 255 else 0))
         
         let tryPlaySound state =
