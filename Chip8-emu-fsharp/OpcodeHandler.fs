@@ -70,3 +70,7 @@ let hAddNoCarry addr value state =
 let hAssign x y state =
     state.V.[x] <- state.V.[y]
     state
+
+let hBitAnd x y state =
+    state.V.[x] <- state.V.[x] &&& state.V.[y]
+    state

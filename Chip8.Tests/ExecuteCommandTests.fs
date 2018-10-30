@@ -157,4 +157,14 @@ let ``AddToIndex. Adds VX to I, increments pc`` () =
     ExecuteCommand state (AddToIndex 0)
     |> should equal expectedState
 
-    
+[<Fact>]
+let ``BitAnd. ANDs VX and VY, stores in VX and increments pc`` () =
+    let state = mutateRegister initialState
+    state.V.[2] <- 0xFEuy
+    state.V.[5] <- 0xF7uy
+
+    let expectedState = { (mutateRegister state) with pc = state.pc + 2us }
+    expectedState.V.[2] <- 0xF6uy
+
+    ExecuteCommand state (BitAnd (2, 5))
+    |> should equal expectedState
