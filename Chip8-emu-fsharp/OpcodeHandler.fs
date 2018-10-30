@@ -74,3 +74,7 @@ let hAssign x y state =
 let hBitAnd x y state =
     state.V.[x] <- state.V.[x] &&& state.V.[y]
     state
+
+let hBitOr x y state =
+    state.V.[x] <- state.V.[x] ||| state.V.[y]
+    state
