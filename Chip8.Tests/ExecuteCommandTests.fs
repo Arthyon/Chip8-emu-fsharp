@@ -148,4 +148,13 @@ let ``Assign. Sets VX to VY, increments pc`` () =
 let ``Unknown. Terminates application`` () =
     let state = ExecuteCommand initialState (Unknown 0x023Fus)
     state |> should equal { initialState with terminating = true, sprintf"Terminating because of unknown opcode %X" 0x023Fus}
+
+[<Fact>]
+let ``AddToIndex. Adds VX to I, increments pc`` () =
+    let state = { (mutateRegister initialState) with I = 0x001us }
+    let expectedState = { state with I = 0x004us ; pc = state.pc + 2us }
+    state.V.[0] <- 0x003uy
+    ExecuteCommand state (AddToIndex 0)
+    |> should equal expectedState
+
     
