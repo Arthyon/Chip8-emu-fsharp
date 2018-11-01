@@ -227,4 +227,15 @@ let ``BitshiftRight. Stores LSB in VF, shifts VX right when LSB is 0`` () =
     expectedState.V.[0] <- 0x76uy
     expectedState.V.[0xF] <- 0uy
     ExecuteCommand state (BitShiftRight 0)
-    |>should equal expectedState
+    |> should equal expectedState
+
+[<Fact>]
+let ``BitXor. XORs VX and VY, stores in VX and increments pc`` () =
+    let state = mutateRegister initialState
+    state.V.[0] <- 0xE4uy
+    state.V.[1] <- 0x37uy
+
+    let expectedState = { (mutateRegister state) with pc = state.pc + 2us }
+    expectedState.V.[0] <- 0xD3uy
+    ExecuteCommand state (BitXor (0, 1))
+    |> should equal expectedState

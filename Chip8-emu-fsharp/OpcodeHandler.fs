@@ -88,3 +88,7 @@ let hBitshiftRight x state =
     state.V.[0xF] <- state.V.[x] &&& 1uy
     state.V.[x] <- state.V.[x] >>> 1
     state
+
+let hBitXor x y state =
+    state.V.[x] <- state.V.[x] ^^^ state.V.[y]
+    state
