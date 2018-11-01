@@ -239,3 +239,24 @@ let ``BitXor. XORs VX and VY, stores in VX and increments pc`` () =
     expectedState.V.[0] <- 0xD3uy
     ExecuteCommand state (BitXor (0, 1))
     |> should equal expectedState
+
+[<Fact>]
+let ``GetTimer. Sets VX to delaytimer, increments pc`` () =
+    let state = { (mutateRegister initialState) with delayTimer = 3uy }
+
+    let expectedState = { (mutateRegister state) with pc = state.pc + 2us }
+    expectedState.V.[5] <- 3uy
+
+    ExecuteCommand state (GetTimer 5)
+    |> should equal expectedState
+    
+
+[<Fact>]
+let ``SetTimer. Sets delaytimer to VX, increments pc`` () =
+    let state = mutateRegister initialState
+    state.V.[0] <- 4uy
+
+    let expectedState = {(mutateRegister state) with pc = state.pc + 2us ; delayTimer = 4uy }
+
+    ExecuteCommand state (SetTimer 0)
+    |> should equal expectedState

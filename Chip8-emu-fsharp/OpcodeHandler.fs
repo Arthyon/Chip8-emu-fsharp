@@ -9,6 +9,10 @@ let mutateRegister state =
     let reg = Array.copy state.V
     { state with V = reg }
 
+let mutateGfx state =
+    let gfx = Array.copy state.gfx
+    { state with gfx = gfx }
+
 let mutateStack state =
     let stack = Array.copy state.stack
     { state with stack = stack }
@@ -91,4 +95,8 @@ let hBitshiftRight x state =
 
 let hBitXor x y state =
     state.V.[x] <- state.V.[x] ^^^ state.V.[y]
+    state
+
+let hGetTimer x state =
+    state.V.[x] <- state.delayTimer
     state

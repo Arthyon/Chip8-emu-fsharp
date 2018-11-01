@@ -97,6 +97,8 @@ let ExecuteCommand state command =
     | BitShiftLeft x                -> mutateRegister >> hBitshiftLeft x >> incrementPc
     | BitShiftRight x               -> mutateRegister >> hBitshiftRight x >> incrementPc
     | BitXor (x, y)                 -> mutateRegister >> hBitXor x y >> incrementPc
+    | GetTimer x                    -> mutateRegister >> hGetTimer x >> incrementPc
+    | SetTimer x                    -> mutateRegister >> (fun s -> { s with delayTimer = s.V.[x] }) >> incrementPc
     | Unknown opcode                -> fun s -> { s with terminating = true, sprintf "Terminating because of unknown opcode %X" opcode }
     <| state
 
