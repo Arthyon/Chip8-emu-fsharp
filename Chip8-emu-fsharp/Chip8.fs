@@ -107,6 +107,7 @@ let ExecuteCommand state command =
     | KeyNotPressed (x, keys)       -> hKeyNotPressed x keys
     | SubtractFromY (x, y)          -> mutateRegister >> hSubtractFromY x y >> incrementPc
     | KeyPressBlocking (x, keys)    -> mutateRegister >> hKeyPressBlocking x keys
+    | DrawSprite (x, y, height)     -> mutateRegister >> mutateGfx >> hDrawSprite x y height >> incrementPc >> redraw
     | Unknown opcode                -> fun s -> { s with terminating = true, sprintf "Terminating because of unknown opcode %X" opcode }
     <| state
 

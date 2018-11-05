@@ -137,3 +137,23 @@ let hKeyPressBlocking x keys state =
     | None      -> state
     | Some idx  -> state.V.[x] <- uint8(idx)
                    { state with pc = state.pc + 2us }
+
+let hDrawSprite startX startY (height: uint8) state =
+    let x = state.V.[startX]
+    let y = state.V.[startY]
+    for yline = 0 to int(height) do
+        let mutable pixel = state.Memory.[int(state.I) + yline]
+
+        for xline = 0 to 8 do
+            if pixel &&& (0x80uy >>> xline) <> 0uy
+            then
+                let index = int((x + uint8(xline)) + (y + uint8(yline))) * 64
+                let pixelValue = if state.gfx.[index] 
+                                    then 
+                                        state.V.[0xF] <- 1uy
+                                        1 
+                                    else 0
+                let newVal = pixelValue ^^^ 1
+                state.gfx.[index] <- newVal = 1
+
+    state
