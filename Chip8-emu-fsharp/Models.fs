@@ -46,11 +46,7 @@ type Command =
 | SetIndex of uint16
 | JumpRelative of uint16
 | Rand of int * uint8
-| DrawSprite of int * int * uint8
-| KeyPressed of int * uint8[]
-| KeyNotPressed of int * uint8[]
 | GetTimer of int
-| KeyPressBlocking of int * uint8[]
 | SetTimer of int
 | SetSound of int
 | AddToIndex of int
@@ -58,6 +54,10 @@ type Command =
 | RegDump of int
 | RegLoad of int
 | ClearScreen
+| DrawSprite of int * int * uint8
+| KeyPressed of int * uint8[]
+| KeyNotPressed of int * uint8[]
+| KeyPressBlocking of int * uint8[]
 | Unknown of uint16
 
 

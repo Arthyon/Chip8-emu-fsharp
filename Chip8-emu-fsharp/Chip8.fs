@@ -99,6 +99,7 @@ let ExecuteCommand state command =
     | BitXor (x, y)                 -> mutateRegister >> hBitXor x y >> incrementPc
     | GetTimer x                    -> mutateRegister >> hGetTimer x >> incrementPc
     | SetTimer x                    -> mutateRegister >> (fun s -> { s with delayTimer = s.V.[x] }) >> incrementPc
+    | JumpRelative N                -> (fun s -> { s with pc = uint16(s.V.[0]) + N })
     | Unknown opcode                -> fun s -> { s with terminating = true, sprintf "Terminating because of unknown opcode %X" opcode }
     <| state
 

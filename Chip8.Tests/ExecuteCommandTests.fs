@@ -260,3 +260,11 @@ let ``SetTimer. Sets delaytimer to VX, increments pc`` () =
 
     ExecuteCommand state (SetTimer 0)
     |> should equal expectedState
+
+[<Fact>]
+let ``JumpRelative. Sets pc to V0 + N`` () =
+    let state = mutateRegister initialState
+    state.V.[0] <- 0x50uy
+
+    ExecuteCommand state (JumpRelative 0x202us)
+    |> should equal { state with pc = 0x252us }
