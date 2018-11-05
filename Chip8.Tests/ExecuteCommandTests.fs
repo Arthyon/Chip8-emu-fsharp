@@ -346,3 +346,34 @@ let ``KeyNotPressed. Does not skip next instruction if key x is pressed`` () =
     keys.[3] <- 1uy
     ExecuteCommand initialState (KeyNotPressed (3, keys))
     |> should equal { initialState with pc = initialState.pc + 2us }
+
+
+[<Fact>]
+let ``SubtractFromY. Subtracts VX from VY, stored in VX, VF set to 0 when no borrow`` () =
+    
+    let state = mutateRegister initialState
+    state.V.[0] <- 85uy
+    state.V.[1] <- 254uy
+    state.V.[0xF] <- 1uy
+
+    let expectedState = { (mutateRegister state) with pc = state.pc + 2us }
+    expectedState.V.[0] <- 169uy
+    expectedState.V.[0xF] <- 0uy
+    
+    ExecuteCommand state (SubtractFromY (0, 1))
+    |> should equal expectedState
+
+
+[<Fact>]
+let ``SubtractFromY. Subtract VX from VY, stored in VX,, VF set to 1 on borrow`` () =
+    let state = mutateRegister initialState
+    state.V.[0] <- 85uy
+    state.V.[1] <- 4uy
+    state.V.[0xF] <- 0uy
+
+    let expectedState = { (mutateRegister state) with pc = state.pc + 2us }
+    expectedState.V.[0] <- 175uy
+    expectedState.V.[0xF] <- 1uy
+    
+    ExecuteCommand state (SubtractFromY (0, 1))
+    |> should equal expectedState

@@ -122,3 +122,11 @@ let hKeyPress x (keys: uint8 []) state =
 let hKeyNotPressed x (keys: uint8 []) state =
     let pc = if keys.[x] = 0uy then state.pc + 4us else state.pc + 2us
     { state with pc = pc } 
+
+let hSubtractFromY x y state =
+    let xvalue = state.V.[x]
+    let yvalue = state.V.[y]
+    let borrow = if (int16(yvalue) - int16(xvalue)) < 0s then 1uy else 0uy
+    state.V.[x] <- (yvalue - xvalue)
+    state.V.[0xF] <- borrow
+    state
