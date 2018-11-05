@@ -268,3 +268,53 @@ let ``JumpRelative. Sets pc to V0 + N`` () =
 
     ExecuteCommand state (JumpRelative 0x202us)
     |> should equal { state with pc = 0x252us }
+
+[<Fact>]
+let ``SetSound. Sets soundTimer to VX, increments pc`` () =
+    let state = mutateRegister initialState
+    state.V.[1] <- 5uy
+
+    ExecuteCommand state (SetSound 1)
+    |> should equal { state with soundTimer = 5uy; pc = state.pc + 2us }
+
+[<Fact>]
+let ``SkipIfRegisterNotEq. Skips next instruction if VX is not equal to VY`` () =
+    let state = { initialState with V = [|0xBAuy;0xEEuy|] ; pc = 0x200us }
+    ExecuteCommand state (SkipIfRegisterNotEq (1, 0))
+    |> should equal { state with pc = 0x204us}
+
+[<Fact>]
+let ``SkipIfRegisterNotEq. Does not skip next instruction if VX is equal to VY`` () =
+    let state = { initialState with V = [|0xEEuy;0xEEuy|] ; pc = 0x200us }
+    ExecuteCommand state (SkipIfRegisterNotEq (1, 0))
+    |> should equal { state with pc = 0x202us} 
+
+[<Fact>]
+let ``Subtract. Subtracts VY from VX, VF set to 0 when no borrow`` () =
+    
+    let state = mutateRegister initialState
+    state.V.[0] <- 254uy
+    state.V.[1] <- 85uy
+    state.V.[0xF] <- 1uy
+
+    let expectedState = { (mutateRegister state) with pc = state.pc + 2us }
+    expectedState.V.[0] <- 169uy
+    expectedState.V.[0xF] <- 0uy
+    
+    ExecuteCommand state (Subtract (0,1))
+    |> should equal expectedState
+
+
+[<Fact>]
+let ``Subtract. Subtract VY from VX, VF set to 1 on borrow`` () =
+    let state = mutateRegister initialState
+    state.V.[0] <- 4uy
+    state.V.[1] <- 85uy
+    state.V.[0xF] <- 0uy
+
+    let expectedState = { (mutateRegister state) with pc = state.pc + 2us }
+    expectedState.V.[0] <- 175uy
+    expectedState.V.[0xF] <- 1uy
+    
+    ExecuteCommand state (Subtract (0,1))
+    |> should equal expectedState

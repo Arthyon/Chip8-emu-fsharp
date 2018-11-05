@@ -100,3 +100,17 @@ let hBitXor x y state =
 let hGetTimer x state =
     state.V.[x] <- state.delayTimer
     state
+
+let hSkipIfRegisterNotEq x y state =
+    let pc =    if state.V.[x] <> state.V.[y]
+                then state.pc + 4us
+                else state.pc + 2us
+    { state with pc = pc }
+
+let hSubtract x y state =
+    let xvalue = state.V.[x]
+    let yvalue = state.V.[y]
+    let borrow = if (int16(xvalue) - int16(yvalue)) < 0s then 1uy else 0uy
+    state.V.[x] <- (xvalue - yvalue)
+    state.V.[0xF] <- borrow
+    state

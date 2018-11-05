@@ -100,6 +100,9 @@ let ExecuteCommand state command =
     | GetTimer x                    -> mutateRegister >> hGetTimer x >> incrementPc
     | SetTimer x                    -> mutateRegister >> (fun s -> { s with delayTimer = s.V.[x] }) >> incrementPc
     | JumpRelative N                -> (fun s -> { s with pc = uint16(s.V.[0]) + N })
+    | SetSound x                    -> (fun s -> { s with soundTimer = s.V.[x] }) >> incrementPc
+    | SkipIfRegisterNotEq (x, y)    -> hSkipIfRegisterNotEq x y
+    | Subtract (x,y)                -> mutateRegister >> hSubtract x y >> incrementPc
     | Unknown opcode                -> fun s -> { s with terminating = true, sprintf "Terminating because of unknown opcode %X" opcode }
     <| state
 
