@@ -114,3 +114,11 @@ let hSubtract x y state =
     state.V.[x] <- (xvalue - yvalue)
     state.V.[0xF] <- borrow
     state
+
+let hKeyPress x (keys: uint8 []) state =
+    let pc = if keys.[x] = 1uy then state.pc + 4us else state.pc + 2us
+    { state with pc = pc } 
+
+let hKeyNotPressed x (keys: uint8 []) state =
+    let pc = if keys.[x] = 0uy then state.pc + 4us else state.pc + 2us
+    { state with pc = pc } 

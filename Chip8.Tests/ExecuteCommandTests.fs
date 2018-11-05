@@ -318,3 +318,31 @@ let ``Subtract. Subtract VY from VX, VF set to 1 on borrow`` () =
     
     ExecuteCommand state (Subtract (0,1))
     |> should equal expectedState
+
+[<Fact>]
+let ``KeyPressed. Skips next instruction if key x is pressed`` () =
+    let keys = Array.create 16 0uy
+    keys.[3] <- 1uy
+    ExecuteCommand initialState (KeyPressed (3, keys))
+    |> should equal { initialState with pc = initialState.pc + 4us }
+
+[<Fact>]
+let ``KeyPressed. Does not skip nextinstruction if key x is not pressed`` () =
+    let keys = Array.create 16 0uy
+    keys.[3] <- 0uy
+    ExecuteCommand initialState (KeyPressed (3, keys))
+    |> should equal { initialState with pc = initialState.pc + 2us }
+    
+[<Fact>]
+let ``KeyNotPressed. Skips next instruction if key x is not pressed`` () =
+    let keys = Array.create 16 0uy
+    keys.[3] <- 0uy
+    ExecuteCommand initialState (KeyNotPressed (3, keys))
+    |> should equal { initialState with pc = initialState.pc + 4us }
+
+[<Fact>]
+let ``KeyNotPressed. Does not skip next instruction if key x is pressed`` () =
+    let keys = Array.create 16 0uy
+    keys.[3] <- 1uy
+    ExecuteCommand initialState (KeyNotPressed (3, keys))
+    |> should equal { initialState with pc = initialState.pc + 2us }

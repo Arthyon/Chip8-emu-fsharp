@@ -103,6 +103,8 @@ let ExecuteCommand state command =
     | SetSound x                    -> (fun s -> { s with soundTimer = s.V.[x] }) >> incrementPc
     | SkipIfRegisterNotEq (x, y)    -> hSkipIfRegisterNotEq x y
     | Subtract (x,y)                -> mutateRegister >> hSubtract x y >> incrementPc
+    | KeyPressed (x, keys)          -> hKeyPress x keys
+    | KeyNotPressed (x, keys)       -> hKeyNotPressed x keys
     | Unknown opcode                -> fun s -> { s with terminating = true, sprintf "Terminating because of unknown opcode %X" opcode }
     <| state
 
