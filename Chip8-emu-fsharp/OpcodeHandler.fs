@@ -130,3 +130,10 @@ let hSubtractFromY x y state =
     state.V.[x] <- (yvalue - xvalue)
     state.V.[0xF] <- borrow
     state
+
+let hKeyPressBlocking x keys state =
+    let pressedKeyIdx = keys |> Seq.tryFindIndex (fun k -> k = 1uy)
+    match pressedKeyIdx with
+    | None      -> state
+    | Some idx  -> state.V.[x] <- uint8(idx)
+                   { state with pc = state.pc + 2us }

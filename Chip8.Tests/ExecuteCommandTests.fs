@@ -377,3 +377,21 @@ let ``SubtractFromY. Subtract VX from VY, stored in VX,, VF set to 1 on borrow``
     
     ExecuteCommand state (SubtractFromY (0, 1))
     |> should equal expectedState
+
+[<Fact>]
+let ``KeyPressBlocking. Will not increment pc when no keys are pressed`` () =
+    let keys = Array.create 16 0uy
+    ExecuteCommand initialState (KeyPressBlocking (2, keys))
+    |> should equal initialState
+    
+[<Fact>]
+let ``KeyPressBlocking. Stores first keypress idx in VX, increments pc`` () =
+    let keys = Array.create 16 0uy
+    keys.[2] <- 1uy
+    keys.[6] <- 1uy
+    let expectedState = { (mutateRegister initialState) with pc = initialState.pc + 2us }
+    expectedState.V.[5] <- 2uy
+
+    ExecuteCommand initialState (KeyPressBlocking (5, keys))
+    |> should equal expectedState
+    
