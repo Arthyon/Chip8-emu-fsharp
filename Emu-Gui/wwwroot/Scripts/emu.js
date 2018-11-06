@@ -56,6 +56,11 @@ ipcRenderer.on('console', (event, arg) => {
 });
 
 ipcRenderer.on('beep', (event, arg) => {
+    document.getElementById('beep').innerHTML = "BEEP";
+});
+
+ipcRenderer.on('endBeep', (event, arg) => {
+    document.getElementById('beep').innerHTML = "";
 });
 
 ipcRenderer.on('start', (event, arg) => {

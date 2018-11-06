@@ -26,8 +26,9 @@ namespace EmuGui
             Electron.IpcMain.Send(mainWindow, "update-gfx", state.gfx |> Seq.map (fun p -> if p = 1uy then 255 else 0))
         
         let tryPlaySound state =
-            if state.soundTimer = 1uy 
+            if state.soundTimer > 1uy 
             then Electron.IpcMain.Send(mainWindow, "beep", "")
+            else Electron.IpcMain.Send(mainWindow, "endBeep", "")
         
         let fail (msg: string) =
             Electron.IpcMain.Send(mainWindow, "failure", msg)
