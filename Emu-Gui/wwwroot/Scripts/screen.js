@@ -6,6 +6,14 @@
     imageData.data[index + 3] = a;
 }
 
+function setPixelLinear(imageData, pos, val) {
+    var index = pos * 4;
+    imageData.data[index] = val;
+    imageData.data[index + 1] = val;
+    imageData.data[index + 2] = val;
+    imageData.data[index + 3] = 255;
+}
+
 const screen = document.getElementById("screen");
 const ctx = screen.getContext("2d");
 const imageData = ctx.createImageData(64, 32);
@@ -20,7 +28,9 @@ ctx.putImageData(imageData, 0, 0);
 //screen.style.width = '640px';
 //screen.style.height = '320px';
 function updateScreen(gfx) {
-
-
+    for (var i = 0; i < gfx.length; i++) {
+        setPixelLinear(imageData, i, gfx[i]);
+    }
+    ctx.putImageData(imageData, 0, 0);
 
 }

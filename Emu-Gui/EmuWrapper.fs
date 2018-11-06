@@ -23,7 +23,8 @@ namespace EmuGui
             Electron.IpcMain.Send(mainWindow, "console", (sprintf "%A" object))
 
         let draw (state: State) =
-            Electron.IpcMain.Send(mainWindow, "update-gfx", state.gfx |> Seq.map (fun p -> if p = 1uy then 255 else 0))
+            let mappedState = state.gfx |> Seq.map (fun p -> if p = 1uy then 255 else 0) |> Seq.toArray
+            Electron.IpcMain.Send(mainWindow, "update-gfx",  mappedState)
         
         let tryPlaySound state =
             if state.soundTimer > 1uy 
@@ -35,7 +36,6 @@ namespace EmuGui
             
 
         let updateState currentKeys =
-            console currentKeys
             match currentState with
             | None      ->  updateStatus "Emu not initialized"
             | Some s    ->  let prevStates, newState = StepGameLoop previousStates currentKeys s
