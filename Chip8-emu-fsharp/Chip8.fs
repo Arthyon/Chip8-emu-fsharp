@@ -110,6 +110,10 @@ let ExecuteCommand state command =
     | SubtractFromY (x, y)          -> mutateRegister >> hSubtractFromY x y >> incrementPc
     | KeyPressBlocking (x, keys)    -> mutateRegister >> hKeyPressBlocking x keys
     | DrawSprite (x, y, height)     -> mutateRegister >> mutateGfx >> hDrawSprite x y height >> incrementPc >> redraw
+    | MoveToSprite x                -> (fun s -> {s with I = uint16(s.V.[x] * 5uy) }) >> incrementPc
+    | Rand (x, n)                   -> mutateRegister >> hRand x n >> incrementPc
+    | RegDump x                     -> mutateMemory >> hRegDump x >> incrementPc
+    | RegLoad x                     -> mutateRegister >> hRegLoad x >> incrementPc
     | Unknown opcode                -> fun s -> { s with terminating = true, sprintf "Terminating because of unknown opcode %X" opcode }
     <| state
 

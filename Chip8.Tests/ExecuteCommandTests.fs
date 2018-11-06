@@ -459,3 +459,60 @@ let ``DrawSprite. Draws sprite to screen and flipping VF, increments pc`` () =
 
     let returnedState = ExecuteCommand state (DrawSprite (0, 0, 3))
     returnedState |> should equal expectedState
+
+[<Fact>]
+let ``DrawSprite. Draws sprite to screen, wraps around`` () =
+    let state = initialState |> mutateMemory |> mutateRegister
+    state.Memory.[int(state.I)] <- 0x3Cuy
+    state.V.[0] <- 63uy
+    state.V.[1] <- 31uy
+
+    let expectedState = { state with pc = state.pc + 2us; frameType = FrameType.Drawable } |> mutateGfx
+    expectedState.gfx.[1] <- 1uy
+    expectedState.gfx.[2] <- 1uy
+    expectedState.gfx.[3] <- 1uy
+    expectedState.gfx.[4] <- 1uy
+
+    ExecuteCommand state (DrawSprite (0, 1, 1))
+    |> should equal expectedState
+    
+[<Fact>]
+let ``MoveToSprite. Moves I to sprite referenced in VX, increments pc`` () =
+    let state = mutateRegister initialState
+    state.V.[4] <- 0x4uy
+
+    ExecuteCommand state (MoveToSprite 4)
+    |> should equal { state with pc = state.pc + 2us ; I = 20us }
+
+[<Fact>]
+let ``Rand. Fills VX with a random number, increments pc`` () =
+    let resultState = ExecuteCommand initialState (Rand (3,34uy))
+    resultState.V.[3] |> should not' (equal 0uy)
+
+[<Fact>]
+let ``RegDump. Fills memory with values from V, starting at I, increments pc`` () =
+    let state = { initialState with I = 4us } |> mutateRegister 
+    state.V.[0] <- 3uy
+    state.V.[3] <- 6uy
+    state.V.[5] <- 8uy
+
+    let expectedState = { (mutateMemory state) with pc = state.pc + 2us}
+    expectedState.Memory.[4] <- 3uy
+    expectedState.Memory.[7] <- 6uy
+
+    ExecuteCommand state (RegDump 4)
+    |> should equal expectedState
+
+[<Fact>]
+let ``RegLoad. Fills V with values from memory, starting at I, increments pc`` () =
+    let state = { initialState with I = 4us } |> mutateMemory
+    state.Memory.[4] <- 3uy
+    state.Memory.[7] <- 6uy
+    state.Memory.[9] <- 8uy
+
+    let expectedState = { (mutateRegister state) with pc = state.pc + 2us}
+    expectedState.V.[0] <- 3uy
+    expectedState.V.[3] <- 6uy
+
+    ExecuteCommand state (RegLoad 4)
+    |> should equal expectedState

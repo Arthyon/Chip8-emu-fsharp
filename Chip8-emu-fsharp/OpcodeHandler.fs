@@ -139,8 +139,8 @@ let hKeyPressBlocking x keys state =
                    { state with pc = state.pc + 2us }
 
 let hDrawSprite startX startY height state =
-    let x = state.V.[startX]
-    let y = state.V.[startY]
+    let x = int(state.V.[startX])
+    let y = int(state.V.[startY])
     state.V.[0xF] <- 0uy
     // Loop over each ROW
     for yline = 0 to (height - 1) do
@@ -154,7 +154,7 @@ let hDrawSprite startX startY height state =
             if pixel &&& (0x80uy >>> xline) <> 0uy
             then
                 // Get index, offset y value by width of screen (64px)
-                let index = int(x + uint8(xline) + ((y + uint8(yline)) * 64uy))
+                let index = (x + xline + ((y + yline) * 64)) % 2048
                 // If displayed pixel is on, register collision
                 if state.gfx.[index] = 1uy 
                 then 
@@ -162,4 +162,21 @@ let hDrawSprite startX startY height state =
                 // Set pixel value using xor
                 let newVal = state.gfx.[index] ^^^ 1uy
                 state.gfx.[index] <- uint8(newVal)
+    state
+
+let hRand x n state =
+    let rand = uint8(System.Random().Next(0,255))
+    state.V.[x] <- rand &&& n
+    state
+
+let hRegDump x state =
+    let startI = int(state.I)
+    for i = 0 to x do
+        state.Memory.[startI + i] <- state.V.[i]
+    state
+
+let hRegLoad x state =
+    let startI = int(state.I)
+    for i = 0 to x do
+        state.V.[i] <- state.Memory.[startI + i]
     state
