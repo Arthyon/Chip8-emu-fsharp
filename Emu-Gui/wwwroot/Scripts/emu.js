@@ -18,6 +18,10 @@ document.addEventListener('keydown', (event) => {
             isPaused = true;
     } else if (res.rewindButton) {
         rewind = true;
+    } else if (res.stepForwardButton) {
+        isPaused = true;
+
+        ipcRenderer.send('tick', { keys, rewind });
     }
 });
 
@@ -57,14 +61,16 @@ ipcRenderer.on('console', (event, arg) => {
 
 ipcRenderer.on('beep', (event, arg) => {
     document.getElementById('beep').innerHTML = "BEEP";
+    setTimeout(() => document.getElementById('beep').innerHTML = "", 500);
 });
 
-ipcRenderer.on('endBeep', (event, arg) => {
-    document.getElementById('beep').innerHTML = "";
-});
+// ipcRenderer.on('endBeep', (event, arg) => {
+//     document.getElementById('beep').innerHTML = "";
+// });
 
 ipcRenderer.on('start', (event, arg) => {
-    start();
+    isPaused = true;
+    // start();
 });
 
 ipcRenderer.on('update-gfx', (event, arg) => {

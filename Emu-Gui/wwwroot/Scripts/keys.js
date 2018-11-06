@@ -54,14 +54,16 @@ function handleInput(key, value) {
             idx = 15;
             break;
         case "b":
-            return { pauseButton: false, rewindButton: true };
+            return { rewindButton: true };
+        case "n":
+            return { stepForwardButton: true };
         case " ":
-            return { pauseButton: true, rewindButton: false };
+            return { pauseButton: true };
     }
 
     if (idx != -1)
         keys[idx] = value;
 
-    return { pauseButton: false, rewindButton: false };
+    return {};
 
 }

@@ -27,9 +27,8 @@ namespace EmuGui
             Electron.IpcMain.Send(mainWindow, "update-gfx",  mappedState)
         
         let tryPlaySound state =
-            if state.soundTimer > 1uy 
+            if state.soundTimer = 1uy 
             then Electron.IpcMain.Send(mainWindow, "beep", "")
-            else Electron.IpcMain.Send(mainWindow, "endBeep", "")
         
         let fail (msg: string) =
             Electron.IpcMain.Send(mainWindow, "failure", msg)
@@ -38,7 +37,7 @@ namespace EmuGui
         let updateState currentKeys =
             match currentState with
             | None      ->  updateStatus "Emu not initialized"
-            | Some s    ->  let prevStates, newState = StepGameLoop previousStates currentKeys s
+            | Some s    ->  let prevStates, newState = StepGameLoop previousStates currentKeys console s
                             if fst newState.terminating 
                             then
                                 ()
@@ -46,7 +45,7 @@ namespace EmuGui
                                 //currentState <- None
                             else
                                 currentState <- Some newState
-                                previousStates <- prevStates
+                                // previousStates <- prevStates
                                 tryPlaySound newState
                                 match newState.frameType with
                                 | FrameType.Drawable        -> draw newState
@@ -75,7 +74,7 @@ namespace EmuGui
             updateStatus "Initializing"
             Electron.IpcMain.RemoveAllListeners("tick");
             Electron.IpcMain.On("tick", fun args -> updateState (toKeyInput args))
-            let prevStates, state = InitEmu bytes 
+            let prevStates, state = InitEmu bytes console
             currentState <- Some state
             previousStates <- prevStates
             updateStatus "Running"

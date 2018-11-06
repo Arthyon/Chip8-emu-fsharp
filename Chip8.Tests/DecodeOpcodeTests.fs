@@ -141,3 +141,7 @@ let ``0xFX55 Stores V0 to VX in memory starting at address I`` () =
 [<Fact>]
 let ``0xFX65 Fills V0 to VX with memory values starting at address I`` () = 
     DecodeOpCode emptyKeys 0xF565us |> should equal (RegLoad 5)
+
+[<Fact>]
+let ``0x0NNN Is ignored`` () = 
+    DecodeOpCode emptyKeys 0x0565us |> should equal IgnoredOpcode

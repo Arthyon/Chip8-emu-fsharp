@@ -3,9 +3,9 @@
 open Chip8
 open Initialization
 
-let StepGameLoop (previousStates: State list) input state =
+let StepGameLoop (previousStates: State list) input logger state =
     match input with
-    | NormalPlay keys   ->  let newState = EmulateCycle state keys
+    | NormalPlay keys   ->  let newState = EmulateCycle state keys logger
                             (state::previousStates), newState
     | Rewind            ->  match previousStates with
                             | head::tail    ->  tail, head
@@ -26,8 +26,8 @@ let rec ValidateRom (program: byte[]) pos =
                        else None
     | _             -> ValidateRom program (pos + 2)
                 
-let InitEmu bytes =
+let InitEmu bytes logger =
     let initialState = Initialization.Initialize bytes
     let initialInput = Initialization.initialInput
 
-    initialState |> StepGameLoop [] initialInput
+    initialState |> StepGameLoop [] initialInput logger

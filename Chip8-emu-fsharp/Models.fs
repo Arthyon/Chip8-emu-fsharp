@@ -58,6 +58,7 @@ type Command =
 | KeyPressed of int * uint8[]
 | KeyNotPressed of int * uint8[]
 | KeyPressBlocking of int * uint8[]
+| IgnoredOpcode
 | Unknown of uint16
 
 

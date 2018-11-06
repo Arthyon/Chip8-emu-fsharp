@@ -34,8 +34,6 @@ let FetchOpcode state :Opcode =
 
 let DecodeNestedOpCodeLsb (opcode: Opcode) =
     match opcode &&& 0xF00Fus with
-    | 0x0000us  -> ClearScreen
-    | 0x000Eus  -> ReturnFromSubroutine
     | 0x8000us  -> Assign (toXY opcode)
     | 0x8001us  -> BitOr (toXY opcode)
     | 0x8002us  -> BitAnd (toXY opcode)
@@ -45,10 +43,14 @@ let DecodeNestedOpCodeLsb (opcode: Opcode) =
     | 0x8006us  -> BitShiftRight (toX opcode)
     | 0x8007us  -> SubtractFromY (toXY opcode)
     | 0x800Eus  -> BitShiftLeft (toX opcode)
-    | _         -> Unknown opcode
+    | _         -> if (opcode &&& 0xF000us) = 0x0000us 
+                   then IgnoredOpcode 
+                   else Unknown opcode
 
 let DecodeNestedOpCode (opcode: Opcode) keys =
     match opcode &&& 0xF0FFus with
+    | 0x00E0us  -> ClearScreen
+    | 0x00EEus  -> ReturnFromSubroutine
     | 0xE09Eus  -> KeyPressed ((toX opcode) , keys) 
     | 0xE0A1us  -> KeyNotPressed ((toX opcode), keys)
     | 0xF007us  -> GetTimer (toX opcode)
@@ -78,7 +80,8 @@ let DecodeOpCode keys (opcode: Opcode) =
     | 0xD000us -> DrawSprite (toXYI opcode)
     | _        -> DecodeNestedOpCode opcode keys
 
-let ExecuteCommand state command =
+let ExecuteCommand state logger command =
+    sprintf "%A" command |> logger
     match command with
     | SetIndex idx                  -> (fun s -> { s with I = idx }) >> incrementPc
     | Jump value                    -> (fun s ->  { s with pc = value })
@@ -114,6 +117,7 @@ let ExecuteCommand state command =
     | Rand (x, n)                   -> mutateRegister >> hRand x n >> incrementPc
     | RegDump x                     -> mutateMemory >> hRegDump x >> incrementPc
     | RegLoad x                     -> mutateRegister >> hRegLoad x >> incrementPc
+    | IgnoredOpcode                 -> incrementPc    
     | Unknown opcode                -> fun s -> { s with terminating = true, sprintf "Terminating because of unknown opcode %X" opcode }
     <| state
 
@@ -122,9 +126,9 @@ let ResetFrameType state =
 let UpdateTimers state =
     { state with delayTimer = Math.Max(0uy, state.delayTimer - 1uy) ; soundTimer = Math.Max(0uy, state.soundTimer - 1uy) }
 
-let EmulateCycle state keys =
+let EmulateCycle state keys logger =
     FetchOpcode state
         |> DecodeOpCode keys
-        |> ExecuteCommand (ResetFrameType state)
+        |> ExecuteCommand (ResetFrameType state) logger
         |> UpdateTimers
 
