@@ -21,6 +21,8 @@ let toXYN opcode =
     toX opcode, toY opcode, toN opcode
 let toXNN opcode =
     toX opcode, toNN opcode
+let toXYI opcode =
+    toX opcode, toY opcode, int(opcode &&& 0x00Fus)
 
 let FetchFromMemory state (address: uint16 ) =
     state.Memory.[int32(address)]
@@ -73,7 +75,7 @@ let DecodeOpCode keys (opcode: Opcode) =
     | 0xA000us -> SetIndex (toNNN opcode)
     | 0xB000us -> JumpRelative (toNNN opcode)
     | 0xC000us -> Rand (toXNN opcode)
-    | 0xD000us -> DrawSprite (toXYN opcode)
+    | 0xD000us -> DrawSprite (toXYI opcode)
     | _        -> DecodeNestedOpCode opcode keys
 
 let ExecuteCommand state command =
@@ -87,7 +89,7 @@ let ExecuteCommand state command =
     | SetRegister (addr, value)     -> mutateRegister >> hSetRegister addr value >> incrementPc
     | AddNoCarry (addr, value)      -> mutateRegister >> hAddNoCarry addr value >> incrementPc
     | ReturnFromSubroutine          -> hReturnFromSubroutine >> incrementPc
-    | ClearScreen                   -> (fun s ->  { s with gfx = (Array.create 2048 false); } ) >> incrementPc >> redraw
+    | ClearScreen                   -> (fun s ->  { s with gfx = (Array.create 2048 0uy); } ) >> incrementPc >> redraw
     | BinaryCode x                  -> mutateMemory >> handleBinaryCode x >> incrementPc
     | Add (x, y)                    -> mutateRegister >> handleAdd x y >> incrementPc
     | Assign (x, y)                 -> mutateRegister >> hAssign x y >> incrementPc

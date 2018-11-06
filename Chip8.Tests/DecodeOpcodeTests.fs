@@ -96,7 +96,7 @@ let ``0xCXNN Sets VX to random number`` () =
 
 [<Fact>]
 let ``0xDXYN Draws a sprite to the screen`` () = 
-    DecodeOpCode emptyKeys 0xDE58us |> should equal (DrawSprite (14,5, 8uy))
+    DecodeOpCode emptyKeys 0xDE58us |> should equal (DrawSprite (14,5, 8))
 
 [<Fact>]
 let ``0xEX9E Skips next instruction if key is pressed`` () = 

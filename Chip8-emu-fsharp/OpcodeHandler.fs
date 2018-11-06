@@ -138,22 +138,28 @@ let hKeyPressBlocking x keys state =
     | Some idx  -> state.V.[x] <- uint8(idx)
                    { state with pc = state.pc + 2us }
 
-let hDrawSprite startX startY (height: uint8) state =
+let hDrawSprite startX startY height state =
     let x = state.V.[startX]
     let y = state.V.[startY]
-    for yline = 0 to int(height) do
+    state.V.[0xF] <- 0uy
+    // Loop over each ROW
+    for yline = 0 to (height - 1) do
+        // Fetch pixel value from memory starting at location I
         let mutable pixel = state.Memory.[int(state.I) + yline]
 
-        for xline = 0 to 8 do
+        // Loop over 8 bits pr row
+        for xline = 0 to 7 do
+            // Check if currently evaluated pixel is set to 1
+            // 0x80uy >>> xline scans through byte one bit at the time
             if pixel &&& (0x80uy >>> xline) <> 0uy
             then
-                let index = int((x + uint8(xline)) + (y + uint8(yline))) * 64
-                let pixelValue = if state.gfx.[index] 
-                                    then 
-                                        state.V.[0xF] <- 1uy
-                                        1 
-                                    else 0
-                let newVal = pixelValue ^^^ 1
-                state.gfx.[index] <- newVal = 1
-
+                // Get index, offset y value by width of screen (64px)
+                let index = int(x + uint8(xline) + ((y + uint8(yline)) * 64uy))
+                // If displayed pixel is on, register collision
+                if state.gfx.[index] = 1uy 
+                then 
+                    state.V.[0xF] <- 1uy
+                // Set pixel value using xor
+                let newVal = state.gfx.[index] ^^^ 1uy
+                state.gfx.[index] <- uint8(newVal)
     state

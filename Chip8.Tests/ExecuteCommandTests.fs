@@ -87,9 +87,9 @@ let ``ReturnFromSubroutine. Sets pc to previous stack value, resets pointer, inc
 
 [<Fact>]
 let ``ClearScreen. Resets gfx array, increments pc and marks frame as drawable`` () =
-    let state = { initialState with gfx = [|true;true;false|] }
+    let state = { initialState with gfx = [|1uy;1uy;0uy|] }
     ExecuteCommand state ClearScreen
-    |> should equal { state with gfx = (Array.create 2048 false) ; pc = state.pc + 2us; frameType = Drawable }
+    |> should equal { state with gfx = (Array.create 2048 0uy) ; pc = state.pc + 2us; frameType = Drawable }
 
 [<Fact>]
 let ``BinaryCode. Assigns binary coded representation of VX to memory`` () =
@@ -395,3 +395,67 @@ let ``KeyPressBlocking. Stores first keypress idx in VX, increments pc`` () =
     ExecuteCommand initialState (KeyPressBlocking (5, keys))
     |> should equal expectedState
     
+[<Fact>]
+let ``DrawSprite. Draws sprite to screen without flipping VF, increments pc`` () =
+    let state = initialState |> mutateMemory
+    state.Memory.[int(state.I)] <- 0x3Cuy
+    state.Memory.[int(state.I) + 1] <- 0xC3uy
+    state.Memory.[int(state.I) + 2] <- 0xFFuy
+
+    let expectedState = { state with pc = state.pc + 2us; frameType = FrameType.Drawable } |> mutateGfx
+    expectedState.gfx.[2] <- 1uy
+    expectedState.gfx.[3] <- 1uy
+    expectedState.gfx.[4] <- 1uy
+    expectedState.gfx.[5] <- 1uy
+
+    expectedState.gfx.[64] <- 1uy
+    expectedState.gfx.[65] <- 1uy
+    expectedState.gfx.[70] <- 1uy
+    expectedState.gfx.[71] <- 1uy
+
+
+    expectedState.gfx.[128] <- 1uy
+    expectedState.gfx.[129] <- 1uy
+    expectedState.gfx.[130] <- 1uy
+    expectedState.gfx.[131] <- 1uy
+    expectedState.gfx.[132] <- 1uy
+    expectedState.gfx.[133] <- 1uy
+    expectedState.gfx.[134] <- 1uy
+    expectedState.gfx.[135] <- 1uy
+
+    let returnedState = ExecuteCommand state (DrawSprite (0, 0, 3))
+    returnedState |> should equal expectedState
+    
+[<Fact>]
+let ``DrawSprite. Draws sprite to screen and flipping VF, increments pc`` () =
+    let state = initialState |> mutateMemory |> mutateGfx
+    state.Memory.[int(state.I)] <- 0x3Cuy
+    state.Memory.[int(state.I) + 1] <- 0xC3uy
+    state.Memory.[int(state.I) + 2] <- 0xFFuy
+    state.gfx.[64] <- 1uy
+
+    let expectedState = { state with pc = state.pc + 2us; frameType = FrameType.Drawable } |> mutateGfx |> mutateRegister
+    expectedState.V.[0xF] <- 1uy
+
+    expectedState.gfx.[2] <- 1uy
+    expectedState.gfx.[3] <- 1uy
+    expectedState.gfx.[4] <- 1uy
+    expectedState.gfx.[5] <- 1uy
+
+    expectedState.gfx.[64] <- 0uy
+    expectedState.gfx.[65] <- 1uy
+    expectedState.gfx.[70] <- 1uy
+    expectedState.gfx.[71] <- 1uy
+
+
+    expectedState.gfx.[128] <- 1uy
+    expectedState.gfx.[129] <- 1uy
+    expectedState.gfx.[130] <- 1uy
+    expectedState.gfx.[131] <- 1uy
+    expectedState.gfx.[132] <- 1uy
+    expectedState.gfx.[133] <- 1uy
+    expectedState.gfx.[134] <- 1uy
+    expectedState.gfx.[135] <- 1uy
+
+    let returnedState = ExecuteCommand state (DrawSprite (0, 0, 3))
+    returnedState |> should equal expectedState

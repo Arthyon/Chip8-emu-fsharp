@@ -14,7 +14,7 @@ type State = {
     V: array<uint8>; // 16
     pc: uint16;
     I: uint16;
-    gfx: array<bool>; // 2048
+    gfx: array<uint8>; // 2048
     delayTimer:uint8;
     soundTimer: uint8;
     stack: array<uint16>; // 16
@@ -54,7 +54,7 @@ type Command =
 | RegDump of int
 | RegLoad of int
 | ClearScreen
-| DrawSprite of int * int * uint8
+| DrawSprite of int * int * int
 | KeyPressed of int * uint8[]
 | KeyNotPressed of int * uint8[]
 | KeyPressBlocking of int * uint8[]
