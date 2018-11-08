@@ -291,31 +291,31 @@ let ``SkipIfRegisterNotEq. Does not skip next instruction if VX is equal to VY``
     |> should equal { state with pc = 0x202us} 
 
 [<Fact>]
-let ``Subtract. Subtracts VY from VX, VF set to 0 when no borrow`` () =
+let ``Subtract. Subtracts VY from VX, VF set to 1 when no borrow`` () =
     
     let state = mutateRegister initialState
     state.V.[0] <- 254uy
     state.V.[1] <- 85uy
-    state.V.[0xF] <- 1uy
+    state.V.[0xF] <- 0uy
 
     let expectedState = { (mutateRegister state) with pc = state.pc + 2us }
     expectedState.V.[0] <- 169uy
-    expectedState.V.[0xF] <- 0uy
+    expectedState.V.[0xF] <- 1uy
     
     ExecuteCommand state logger (Subtract (0,1))
     |> should equal expectedState
 
 
 [<Fact>]
-let ``Subtract. Subtract VY from VX, VF set to 1 on borrow`` () =
+let ``Subtract. Subtract VY from VX, VF set to 0 on borrow`` () =
     let state = mutateRegister initialState
     state.V.[0] <- 4uy
     state.V.[1] <- 85uy
-    state.V.[0xF] <- 0uy
+    state.V.[0xF] <- 1uy
 
     let expectedState = { (mutateRegister state) with pc = state.pc + 2us }
     expectedState.V.[0] <- 175uy
-    expectedState.V.[0xF] <- 1uy
+    expectedState.V.[0xF] <- 0uy
     
     ExecuteCommand state logger (Subtract (0,1))
     |> should equal expectedState
@@ -350,31 +350,31 @@ let ``KeyNotPressed. Does not skip next instruction if key x is pressed`` () =
 
 
 [<Fact>]
-let ``SubtractFromY. Subtracts VX from VY, stored in VX, VF set to 0 when no borrow`` () =
+let ``SubtractFromY. Subtracts VX from VY, stored in VX, VF set to 1 when no borrow`` () =
     
     let state = mutateRegister initialState
     state.V.[0] <- 85uy
     state.V.[1] <- 254uy
-    state.V.[0xF] <- 1uy
+    state.V.[0xF] <- 0uy
 
     let expectedState = { (mutateRegister state) with pc = state.pc + 2us }
     expectedState.V.[0] <- 169uy
-    expectedState.V.[0xF] <- 0uy
+    expectedState.V.[0xF] <- 1uy
     
     ExecuteCommand state logger (SubtractFromY (0, 1))
     |> should equal expectedState
 
 
 [<Fact>]
-let ``SubtractFromY. Subtract VX from VY, stored in VX,, VF set to 1 on borrow`` () =
+let ``SubtractFromY. Subtract VX from VY, stored in VX,, VF set to 0 on borrow`` () =
     let state = mutateRegister initialState
     state.V.[0] <- 85uy
     state.V.[1] <- 4uy
-    state.V.[0xF] <- 0uy
+    state.V.[0xF] <- 1uy
 
     let expectedState = { (mutateRegister state) with pc = state.pc + 2us }
     expectedState.V.[0] <- 175uy
-    expectedState.V.[0xF] <- 1uy
+    expectedState.V.[0xF] <- 0uy
     
     ExecuteCommand state logger (SubtractFromY (0, 1))
     |> should equal expectedState

@@ -65,10 +65,7 @@ namespace EmuGui
         member this.Load path = 
             updateStatus "Loading file..."
             let bytes = File.ReadAllBytes path
-            let validationResult = ValidateRom bytes 0
-            match validationResult with
-            | Some s    -> fail (sprintf "Error loading rom: %s" s)
-            | None      -> this.InitializeSession bytes
+            this.InitializeSession bytes
 
         member this.InitializeSession bytes =
             updateStatus "Initializing"

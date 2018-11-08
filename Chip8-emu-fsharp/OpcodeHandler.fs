@@ -110,7 +110,7 @@ let hSkipIfRegisterNotEq x y state =
 let hSubtract x y state =
     let xvalue = state.V.[x]
     let yvalue = state.V.[y]
-    let borrow = if (int16(xvalue) - int16(yvalue)) < 0s then 1uy else 0uy
+    let borrow = if (int16(xvalue) - int16(yvalue)) < 0s then 0uy else 1uy
     state.V.[x] <- (xvalue - yvalue)
     state.V.[0xF] <- borrow
     state
@@ -126,7 +126,7 @@ let hKeyNotPressed x (keys: uint8 []) state =
 let hSubtractFromY x y state =
     let xvalue = state.V.[x]
     let yvalue = state.V.[y]
-    let borrow = if (int16(yvalue) - int16(xvalue)) < 0s then 1uy else 0uy
+    let borrow = if (int16(yvalue) - int16(xvalue)) < 0s then 0uy else 1uy
     state.V.[x] <- (yvalue - xvalue)
     state.V.[0xF] <- borrow
     state

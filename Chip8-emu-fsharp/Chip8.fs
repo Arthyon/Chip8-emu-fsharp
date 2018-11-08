@@ -113,7 +113,7 @@ let ExecuteCommand state logger command =
     | SubtractFromY (x, y)          -> mutateRegister >> hSubtractFromY x y >> incrementPc
     | KeyPressBlocking (x, keys)    -> mutateRegister >> hKeyPressBlocking x keys
     | DrawSprite (x, y, height)     -> mutateRegister >> mutateGfx >> hDrawSprite x y height >> incrementPc >> redraw
-    | MoveToSprite x                -> (fun s -> {s with I = uint16(s.V.[x] * 5uy) }) >> incrementPc
+    | MoveToSprite x                -> (fun s -> { s with I = (uint16(s.V.[x]) * 5us) + 80us }) >> incrementPc
     | Rand (x, n)                   -> mutateRegister >> hRand x n >> incrementPc
     | RegDump x                     -> mutateMemory >> hRegDump x >> incrementPc
     | RegLoad x                     -> mutateRegister >> hRegLoad x >> incrementPc
