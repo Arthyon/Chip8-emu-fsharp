@@ -83,40 +83,40 @@ let DecodeOpCode keys (opcode: Opcode) =
 let ExecuteCommand (state, stateMutator) logger command =
     sprintf "%A" command |> logger
     match command with
-    | SetIndex idx                  -> (fun (s, m) -> { s with I = idx }) >> incrementPc
-    | Jump value                    -> (fun s ->  { s with pc = value })
-    | JumpToSubroutine value        -> mutateStack >> hJumpToSubroutine value
+    | SetIndex idx                  -> hSetIndex idx >> incrementPc
+    | Jump value                    -> hJump value
+    | JumpToSubroutine value        -> hJumpToSubroutine value
     | SkipIfTrue (addr, value)      -> hSkipIfTrue addr value
     | SkipIfFalse (addr, value)     -> hSkipIfFalse addr value
     | SkipIfRegisterEq (x, y)       -> hSkipIfRegisterEquals x y
-    | SetRegister (addr, value)     -> mutateRegister >> hSetRegister addr value >> incrementPc
-    | AddNoCarry (addr, value)      -> mutateRegister >> hAddNoCarry addr value >> incrementPc
+    | SetRegister (addr, value)     -> hSetRegister addr value >> incrementPc
+    | AddNoCarry (addr, value)      -> hAddNoCarry addr value >> incrementPc
     | ReturnFromSubroutine          -> hReturnFromSubroutine >> incrementPc
-    | ClearScreen                   -> (fun s ->  { s with gfx = (Array.create 2048 0uy); } ) >> incrementPc >> redraw
-    | BinaryCode x                  -> mutateMemory >> handleBinaryCode x >> incrementPc
-    | Add (x, y)                    -> mutateRegister >> handleAdd x y >> incrementPc
-    | Assign (x, y)                 -> mutateRegister >> hAssign x y >> incrementPc
-    | AddToIndex idx                -> (fun s -> { s with I = s.I + uint16(s.V.[idx]) }) >> incrementPc
-    | BitAnd (x , y)                -> mutateRegister >> hBitAnd x y >> incrementPc
-    | BitOr (x , y)                 -> mutateRegister >> hBitOr x y >> incrementPc
-    | BitShiftLeft x                -> mutateRegister >> hBitshiftLeft x >> incrementPc
-    | BitShiftRight x               -> mutateRegister >> hBitshiftRight x >> incrementPc
-    | BitXor (x, y)                 -> mutateRegister >> hBitXor x y >> incrementPc
-    | GetTimer x                    -> mutateRegister >> hGetTimer x >> incrementPc
-    | SetTimer x                    -> mutateRegister >> (fun s -> { s with delayTimer = s.V.[x] }) >> incrementPc
-    | JumpRelative N                -> (fun s -> { s with pc = uint16(s.V.[0]) + N })
-    | SetSound x                    -> (fun s -> { s with soundTimer = s.V.[x] }) >> incrementPc
+    | ClearScreen                   -> hClearScreen >> incrementPc >> redraw
+    | BinaryCode x                  -> handleBinaryCode x >> incrementPc
+    | Add (x, y)                    -> handleAdd x y >> incrementPc
+    | Assign (x, y)                 -> hAssign x y >> incrementPc
+    | AddToIndex idx                -> hAddToIndex idx >> incrementPc
+    | BitAnd (x , y)                -> hBitAnd x y >> incrementPc
+    | BitOr (x , y)                 -> hBitOr x y >> incrementPc
+    | BitShiftLeft x                -> hBitshiftLeft x >> incrementPc
+    | BitShiftRight x               -> hBitshiftRight x >> incrementPc
+    | BitXor (x, y)                 -> hBitXor x y >> incrementPc
+    | GetTimer x                    -> hGetTimer x >> incrementPc
+    | SetTimer x                    -> hSetTimer x >> incrementPc
+    | JumpRelative N                -> hJumpRelative N
+    | SetSound x                    -> hSetSound x >> incrementPc
     | SkipIfRegisterNotEq (x, y)    -> hSkipIfRegisterNotEq x y
-    | Subtract (x,y)                -> mutateRegister >> hSubtract x y >> incrementPc
+    | Subtract (x,y)                -> hSubtract x y >> incrementPc
     | KeyPressed (x, keys)          -> hKeyPress x keys
     | KeyNotPressed (x, keys)       -> hKeyNotPressed x keys
-    | SubtractFromY (x, y)          -> mutateRegister >> hSubtractFromY x y >> incrementPc
-    | KeyPressBlocking (x, keys)    -> mutateRegister >> hKeyPressBlocking x keys
-    | DrawSprite (x, y, height)     -> mutateRegister >> mutateGfx >> hDrawSprite x y height >> incrementPc >> redraw
-    | MoveToSprite x                -> (fun s -> { s with I = (uint16(s.V.[x]) * 5us) + 80us }) >> incrementPc
-    | Rand (x, n)                   -> mutateRegister >> hRand x n >> incrementPc
-    | RegDump x                     -> mutateMemory >> hRegDump x >> incrementPc
-    | RegLoad x                     -> mutateRegister >> hRegLoad x >> incrementPc
+    | SubtractFromY (x, y)          -> hSubtractFromY x y >> incrementPc
+    | KeyPressBlocking (x, keys)    -> hKeyPressBlocking x keys
+    | DrawSprite (x, y, height)     -> hDrawSprite x y height >> incrementPc >> redraw
+    | MoveToSprite x                -> hMoveToSprite x >> incrementPc
+    | Rand (x, n)                   -> hRand x n >> incrementPc
+    | RegDump x                     -> hRegDump x >> incrementPc
+    | RegLoad x                     -> hRegLoad x >> incrementPc
     | IgnoredOpcode                 -> incrementPc    
     | Unknown opcode                -> fun (s,m) -> { s with terminating = true, sprintf "Terminating because of unknown opcode %X" opcode }, m
     <| (state, stateMutator)

@@ -8,6 +8,7 @@ let logger (s: string) =
     ()
 let initialState = Initialization.Initialization.Initialize [||]
 
+
 [<Fact>]
 let ``SetIndex. Sets I to val, increments pc`` () =
     ExecuteCommand initialState logger (SetIndex 0xF64us)
