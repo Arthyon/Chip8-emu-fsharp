@@ -80,10 +80,10 @@ let DecodeOpCode keys (opcode: Opcode) =
     | 0xD000us -> DrawSprite (toXYI opcode)
     | _        -> DecodeNestedOpCode opcode keys
 
-let ExecuteCommand state logger command =
+let ExecuteCommand (state, stateMutator) logger command =
     sprintf "%A" command |> logger
     match command with
-    | SetIndex idx                  -> (fun s -> { s with I = idx }) >> incrementPc
+    | SetIndex idx                  -> (fun (s, m) -> { s with I = idx }) >> incrementPc
     | Jump value                    -> (fun s ->  { s with pc = value })
     | JumpToSubroutine value        -> mutateStack >> hJumpToSubroutine value
     | SkipIfTrue (addr, value)      -> hSkipIfTrue addr value
@@ -118,17 +118,54 @@ let ExecuteCommand state logger command =
     | RegDump x                     -> mutateMemory >> hRegDump x >> incrementPc
     | RegLoad x                     -> mutateRegister >> hRegLoad x >> incrementPc
     | IgnoredOpcode                 -> incrementPc    
-    | Unknown opcode                -> fun s -> { s with terminating = true, sprintf "Terminating because of unknown opcode %X" opcode }
-    <| state
+    | Unknown opcode                -> fun (s,m) -> { s with terminating = true, sprintf "Terminating because of unknown opcode %X" opcode }, m
+    <| (state, stateMutator)
 
-let ResetFrameType state =
-    { state with frameType = Computational }
-let UpdateTimers state =
-    { state with delayTimer = Math.Max(0uy, state.delayTimer - 1uy) ; soundTimer = Math.Max(0uy, state.soundTimer - 1uy) }
+let ResetFrameType state (stateMutator: StateMutator) =
+    stateMutator.frameTypeMutator <- fun _ -> FrameType.Computational
+    state, stateMutator
 
-let EmulateCycle state keys logger =
-    FetchOpcode state
+let UpdateTimers (state, (stateMutator: StateMutator)) =
+    stateMutator.delayTimerMutator <- stateMutator.delayTimerMutator >> (fun t -> Math.Max(0uy, t - 1uy))
+    stateMutator.soundTimerMutator <- stateMutator.soundTimerMutator >> (fun t -> Math.Max(0uy, state.soundTimer - 1uy))
+    state, stateMutator
+
+let passThrough s = s
+let ResetStateMutator (stateMutator: StateMutator) =
+    stateMutator.MemoryMutator <- passThrough
+    stateMutator.VMutator <- passThrough
+    stateMutator.pcMutator <- passThrough
+    stateMutator.IMutator <- passThrough
+    stateMutator.gfxMutator <- passThrough
+    stateMutator.delayTimerMutator <- passThrough
+    stateMutator.soundTimerMutator <- passThrough
+    stateMutator.stackMutator <- passThrough
+    stateMutator.spMutator <- passThrough
+    stateMutator.frameTypeMutator <- passThrough
+    stateMutator
+
+let UpdateState (state, (stateMutator: StateMutator))  =
+    { 
+        Memory = stateMutator.MemoryMutator state.Memory ;
+        V = stateMutator.VMutator state.V ;
+        pc = stateMutator.pcMutator state.pc;
+        I = stateMutator.IMutator state.I;
+        gfx = stateMutator.gfxMutator state.gfx;
+        delayTimer = stateMutator.delayTimerMutator state.delayTimer;
+        soundTimer = stateMutator.soundTimerMutator state.soundTimer;
+        stack = stateMutator.stackMutator state.stack;
+        sp = stateMutator.spMutator state.sp;
+        frameType = stateMutator.frameTypeMutator state.frameType;
+        terminating = state.terminating
+    }, ResetStateMutator stateMutator
+
+
+let EmulateCycle state keys logger stateMutator =
+    let stateTup = ResetStateMutator stateMutator |> ResetFrameType state
+    state 
+        |> FetchOpcode 
         |> DecodeOpCode keys
-        |> ExecuteCommand (ResetFrameType state) logger
+        |> ExecuteCommand stateTup logger
         |> UpdateTimers
+        |> UpdateState
 

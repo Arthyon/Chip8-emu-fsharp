@@ -32,7 +32,6 @@ namespace EmuGui
         
         let fail (msg: string) =
             Electron.IpcMain.Send(mainWindow, "failure", msg)
-            
 
         let updateState currentKeys =
             match currentState with
@@ -45,11 +44,13 @@ namespace EmuGui
                                 //currentState <- None
                             else
                                 currentState <- Some newState
-                                // previousStates <- prevStates
+                                previousStates <- prevStates
                                 tryPlaySound newState
                                 match newState.frameType with
                                 | FrameType.Drawable        -> draw newState
                                 | FrameType.Computational   -> ()
+
+        
 
         let toKeyInput (object : obj) =
             match object with

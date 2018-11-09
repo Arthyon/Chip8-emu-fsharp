@@ -6,7 +6,9 @@ open Initialization
 let StepGameLoop (previousStates: State list) input logger state =
     match input with
     | NormalPlay keys   ->  let newState = EmulateCycle state keys logger
-                            (state::previousStates), newState
+                            match newState.frameType with
+                            | FrameType.Computational   -> previousStates, newState
+                            | FrameType.Drawable        -> (state::previousStates), newState
     | Rewind            ->  match previousStates with
                             | head::tail    ->  tail, head
                             | []            ->  previousStates, state

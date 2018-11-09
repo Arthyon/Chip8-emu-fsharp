@@ -20,8 +20,22 @@ type State = {
     stack: array<uint16>; // 16
     sp: uint16;
     frameType: FrameType;
-    terminating: bool * string;
+    terminating: bool * string
 }
+
+type StateMutator = 
+    val mutable MemoryMutator: Memory -> Memory
+    val mutable VMutator: array<uint8> -> array<uint8>
+    val mutable pcMutator: uint16 -> uint16
+    val mutable IMutator: uint16 -> uint16
+    val mutable gfxMutator: array<uint8> -> array<uint8>
+    val mutable delayTimerMutator:uint8 -> uint8;
+    val mutable soundTimerMutator: uint8 -> uint8;
+    val mutable stackMutator: array<uint16> -> array<uint16>;
+    val mutable spMutator: uint16 -> uint16;
+    val mutable frameTypeMutator: FrameType -> FrameType;
+
+
 
 type Command =
 | JumpToSubroutine of uint16

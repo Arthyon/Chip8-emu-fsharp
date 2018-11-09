@@ -2,8 +2,9 @@
 let redraw state =
     { state with frameType = Drawable }
 
-let incrementPc state =
-    { state with pc = state.pc + 2us }
+let incrementPc (state, (stateMutator: StateMutator)) =
+    stateMutator.pcMutator <- (fun t -> t + 2us)
+    state, stateMutator
 
 let mutateRegister state =
     let reg = Array.copy state.V
