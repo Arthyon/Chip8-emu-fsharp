@@ -321,32 +321,44 @@ let ``Subtract. Subtract VY from VX, VF set to 0 on borrow`` () =
     |> should equal expectedState
 
 [<Fact>]
-let ``KeyPressed. Skips next instruction if key x is pressed`` () =
+let ``KeyPressed. Skips next instruction if key VX is pressed`` () =
+    let state = mutateRegister initialState
+    state.V.[3] <- 5uy
+
     let keys = Array.create 16 0uy
-    keys.[3] <- 1uy
-    ExecuteCommand initialState logger (KeyPressed (3, keys))
-    |> should equal { initialState with pc = initialState.pc + 4us }
+    keys.[5] <- 1uy
+    ExecuteCommand state logger (KeyPressed (3, keys))
+    |> should equal { state with pc = initialState.pc + 4us }
 
 [<Fact>]
-let ``KeyPressed. Does not skip nextinstruction if key x is not pressed`` () =
+let ``KeyPressed. Does not skip next instruction if key VX is not pressed`` () =
+    let state = mutateRegister initialState
+    state.V.[3] <- 5uy
+
     let keys = Array.create 16 0uy
-    keys.[3] <- 0uy
-    ExecuteCommand initialState logger (KeyPressed (3, keys))
-    |> should equal { initialState with pc = initialState.pc + 2us }
+    keys.[5] <- 0uy
+    ExecuteCommand state logger (KeyPressed (3, keys))
+    |> should equal { state with pc = initialState.pc + 2us }
     
 [<Fact>]
-let ``KeyNotPressed. Skips next instruction if key x is not pressed`` () =
+let ``KeyNotPressed. Skips next instruction if key VX is not pressed`` () =
+    let state = mutateRegister initialState
+    state.V.[3] <- 5uy
+
     let keys = Array.create 16 0uy
-    keys.[3] <- 0uy
-    ExecuteCommand initialState logger (KeyNotPressed (3, keys))
-    |> should equal { initialState with pc = initialState.pc + 4us }
+    keys.[5] <- 0uy
+    ExecuteCommand state logger (KeyNotPressed (3, keys))
+    |> should equal { state with pc = initialState.pc + 4us }
 
 [<Fact>]
-let ``KeyNotPressed. Does not skip next instruction if key x is pressed`` () =
+let ``KeyNotPressed. Does not skip next instruction if key VX is pressed`` () =
+    let state = mutateRegister initialState
+    state.V.[3] <- 5uy
+
     let keys = Array.create 16 0uy
-    keys.[3] <- 1uy
-    ExecuteCommand initialState logger (KeyNotPressed (3, keys))
-    |> should equal { initialState with pc = initialState.pc + 2us }
+    keys.[5] <- 1uy
+    ExecuteCommand state logger (KeyNotPressed (3, keys))
+    |> should equal { state with pc = initialState.pc + 2us }
 
 
 [<Fact>]
@@ -483,7 +495,7 @@ let ``MoveToSprite. Moves I to sprite referenced in VX, increments pc`` () =
     state.V.[4] <- 0x4uy
 
     ExecuteCommand state logger (MoveToSprite 4)
-    |> should equal { state with pc = state.pc + 2us ; I = 20us }
+    |> should equal { state with pc = state.pc + 2us ; I = 100us }
 
 [<Fact>]
 let ``Rand. Fills VX with a random number, increments pc`` () =
