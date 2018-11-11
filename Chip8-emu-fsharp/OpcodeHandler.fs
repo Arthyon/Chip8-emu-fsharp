@@ -75,21 +75,28 @@ let handleAdd x y (state, (stateMutator: StateMutator)) =
     let xvalue = state.V.[x]
     let yvalue = state.V.[y]
     let carry = if (uint16(xvalue) + uint16(yvalue)) > 0xFFus then 1uy else 0uy
-    state.V.[x] <- (xvalue + yvalue)
-    state.V.[0xF] <-carry
+    let mutateRegister = mutateArray (fun v ->
+        v.[x] <- (xvalue + yvalue)
+        v.[0xF] <- carry
+    )
+    stateMutator.VMutator <- mutateRegister
     state, stateMutator
 
 let handleBinaryCode x  (state, (stateMutator: StateMutator)) = 
     let xvalue = state.V.[x]
     let moved = xvalue >>> 8
-    state.Memory.[int32(state.I)] <- (moved / 100uy)
-    state.Memory.[int32(state.I + 1us)] <- (moved / 10uy % 10uy)
-    state.Memory.[int32(state.I + 2us)] <- (moved % 100uy % 10uy)
+    let mutateMemory = mutateArray (fun m ->
+        m.[int(state.I)] <- (moved / 100uy)
+        m.[int(state.I + 1us)] <- (moved / 10uy % 10uy)
+        m.[int(state.I + 2us)] <- (moved % 100uy % 10uy)
+    )
+    stateMutator.MemoryMutator <- mutateMemory
     state, stateMutator
 
 let hReturnFromSubroutine  (state, (stateMutator: StateMutator)) = 
     let pointer = state.sp - 1us
-    { state with sp = pointer ; pc = state.stack.[int32(pointer)] }
+    stateMutator.spMutator <- (fun s -> s - 1us)
+    stateMutator.pcMutator <- (fun _ -> state.stack.[int(pointer)])
     state, stateMutator
 
 
@@ -97,106 +104,135 @@ let hSkipIfTrue addr value  (state, (stateMutator: StateMutator)) =
     let pc =    if state.V.[addr] = value 
                 then state.pc + 4us 
                 else state.pc + 2us
-    { state with pc = pc }
+    stateMutator.pcMutator <- (fun _ -> pc)
     state, stateMutator
 
 let hSkipIfFalse addr value  (state, (stateMutator: StateMutator)) = 
     let pc =    if state.V.[addr] <> value 
                 then state.pc + 4us 
                 else state.pc + 2us
-    { state with pc = pc }
+    stateMutator.pcMutator <- (fun _ -> pc)
     state, stateMutator
 
 let hSkipIfRegisterEquals x y  (state, (stateMutator: StateMutator)) = 
     let pc =    if state.V.[x] = state.V.[y]
                 then state.pc + 4us
                 else state.pc + 2us
-    { state with pc = pc }
+    stateMutator.pcMutator <- (fun _ -> pc)
     state, stateMutator
 
 let hSetRegister addr value  (state, (stateMutator: StateMutator)) = 
-    state.V.[addr] <- value
-    state
+    let registerMutator = mutateArray (fun v -> v.[addr] <- value)
+    stateMutator.VMutator <- registerMutator
+    state, stateMutator
 
 let hAddNoCarry addr value  (state, (stateMutator: StateMutator)) = 
-    state.V.[addr] <- state.V.[addr] + value
+    let registerMutator = mutateArray (fun v -> v.[addr] <- v.[addr] + value)
+    stateMutator.VMutator <- registerMutator
     state, stateMutator
 
 let hAssign x y  (state, (stateMutator: StateMutator)) = 
-    state.V.[x] <- state.V.[y]
+    let registerMutator = mutateArray (fun v -> v.[x] <- v.[y])
+    stateMutator.VMutator <- registerMutator
     state, stateMutator
 
 let hBitAnd x y  (state, (stateMutator: StateMutator)) = 
-    state.V.[x] <- state.V.[x] &&& state.V.[y]
+    let registerMutator = mutateArray (fun v -> v.[x] <- v.[x] &&& v.[y])
+    stateMutator.VMutator <- registerMutator
     state, stateMutator
 
 let hBitOr x y  (state, (stateMutator: StateMutator)) = 
-    state.V.[x] <- state.V.[x] ||| state.V.[y]
+    let registerMutator = mutateArray (fun v -> v.[x] <- v.[x] ||| v.[y])
+    stateMutator.VMutator <- registerMutator
     state, stateMutator
 
 let hBitshiftLeft x  (state, (stateMutator: StateMutator)) = 
-    state.V.[0xF] <- state.V.[x] >>> 7
-    state.V.[x] <- state.V.[x] <<< 1
+    let mutateRegister = mutateArray (fun v ->
+        v.[x] <- v.[x] <<< 1
+        v.[0xF] <- v.[x] >>> 7
+    )
+    stateMutator.VMutator <- mutateRegister
     state, stateMutator
 
 let hBitshiftRight x  (state, (stateMutator: StateMutator)) = 
-    state.V.[0xF] <- state.V.[x] &&& 1uy
-    state.V.[x] <- state.V.[x] >>> 1
+    let mutateRegister = mutateArray (fun v ->
+        v.[x] <- v.[x] >>> 1
+        v.[0xF] <- v.[x] &&& 1uy
+    )
+    stateMutator.VMutator <- mutateRegister
     state, stateMutator
 
 let hBitXor x y  (state, (stateMutator: StateMutator)) = 
-    state.V.[x] <- state.V.[x] ^^^ state.V.[y]
+    let mutateRegister = mutateArray (fun v ->
+        v.[x] <- v.[x] ^^^ v.[y]
+    )
+    stateMutator.VMutator <- mutateRegister
     state, stateMutator
 
 let hGetTimer x  (state, (stateMutator: StateMutator)) = 
-    state.V.[x] <- state.delayTimer
+    let mutateRegister = mutateArray (fun v ->
+        v.[x] <- state.delayTimer
+    )
+    stateMutator.VMutator <- mutateRegister
     state, stateMutator
 
 let hSkipIfRegisterNotEq x y  (state, (stateMutator: StateMutator)) = 
     let pc =    if state.V.[x] <> state.V.[y]
                 then state.pc + 4us
                 else state.pc + 2us
-    { state with pc = pc }
+    stateMutator.pcMutator <- (fun _ -> pc)
     state, stateMutator
 
 let hSubtract x y (state, (stateMutator: StateMutator)) = 
     let xvalue = state.V.[x]
     let yvalue = state.V.[y]
     let borrow = if (int16(xvalue) - int16(yvalue)) < 0s then 0uy else 1uy
-    state.V.[x] <- (xvalue - yvalue)
-    state.V.[0xF] <- borrow
+    let mutateRegister = mutateArray (fun v ->
+        v.[x] <- (xvalue - yvalue)
+        v.[0xF] <- borrow
+    )
+    stateMutator.VMutator <- mutateRegister
     state, stateMutator
 
 let hKeyPress x (keys: uint8 [])  (state, (stateMutator: StateMutator)) = 
     let pc = if keys.[int(state.V.[x])] = 1uy then state.pc + 4us else state.pc + 2us
-    { state with pc = pc } 
+    stateMutator.pcMutator <- (fun _ -> pc)
     state, stateMutator
 
 let hKeyNotPressed x (keys: uint8 [])  (state, (stateMutator: StateMutator)) = 
     let pc = if keys.[int(state.V.[x])] = 0uy then state.pc + 4us else state.pc + 2us
-    { state with pc = pc } 
+    stateMutator.pcMutator <- (fun _ -> pc)
     state, stateMutator
 
 let hSubtractFromY x y  (state, (stateMutator: StateMutator)) = 
     let xvalue = state.V.[x]
     let yvalue = state.V.[y]
     let borrow = if (int16(yvalue) - int16(xvalue)) < 0s then 0uy else 1uy
-    state.V.[x] <- (yvalue - xvalue)
-    state.V.[0xF] <- borrow
+    let mutateRegister = mutateArray (fun v ->
+        v.[x] <- (yvalue - xvalue)
+        v.[0xF] <- borrow
+    )
+    stateMutator.VMutator <- mutateRegister
     state, stateMutator
 
 let hKeyPressBlocking x keys  (state, (stateMutator: StateMutator)) = 
     let pressedKeyIdx = keys |> Seq.tryFindIndex (fun k -> k = 1uy)
     match pressedKeyIdx with
-    | None      -> state
-    | Some idx  -> state.V.[x] <- uint8(idx)
-                   { state with pc = state.pc + 2us }
+    | None      ->  ()
+    | Some idx  ->  state.V.[x] <- uint8(idx)
+
+                    let mutateRegister = mutateArray (fun v ->
+                        v.[x] <- uint8(idx)
+                    )
+                    stateMutator.VMutator <- mutateRegister
+                    stateMutator.pcMutator <- (fun pc -> pc + 2us)
     state, stateMutator
 
 let hDrawSprite startX startY height  (state, (stateMutator: StateMutator)) = 
     let x = int(state.V.[startX])
     let y = int(state.V.[startY])
-    state.V.[0xF] <- 0uy
+    let mutable collision = 0uy
+    let gfx = Array.copy state.gfx
     // Loop over each ROW
     for yline = 0 to (height - 1) do
         // Fetch pixel value from memory starting at location I
@@ -211,27 +247,39 @@ let hDrawSprite startX startY height  (state, (stateMutator: StateMutator)) =
                 // Get index, offset y value by width of screen (64px)
                 let index = (x + xline + ((y + yline) * 64)) % 2048
                 // If displayed pixel is on, register collision
-                if state.gfx.[index] = 1uy 
+                if gfx.[index] = 1uy 
                 then 
-                    state.V.[0xF] <- 1uy
+                    collision <- 1uy
                 // Set pixel value using xor
                 let newVal = state.gfx.[index] ^^^ 1uy
-                state.gfx.[index] <- uint8(newVal)
+                gfx.[index] <- uint8(newVal)
+    let mutateRegister = mutateArray (fun v -> v.[0xF] <- collision)
+    stateMutator.VMutator <- mutateRegister
+    stateMutator.gfxMutator <- (fun _ -> gfx)
     state, stateMutator
 
 let hRand x n  (state, (stateMutator: StateMutator)) = 
     let rand = uint8(System.Random().Next(0,255))
-    state.V.[x] <- rand &&& n
+    let mutateRegister = mutateArray (fun v ->
+        v.[x] <- rand &&& n
+    )
+    stateMutator.VMutator <- mutateRegister
     state, stateMutator
 
 let hRegDump x  (state, (stateMutator: StateMutator)) = 
     let startI = int(state.I)
-    for i = 0 to x do
-        state.Memory.[startI + i] <- state.V.[i]
+    let mutateMemory = mutateArray (fun mem ->
+        for i = 0 to x do
+            mem.[startI + i] <- state.V.[i]
+    )
+    stateMutator.MemoryMutator <- mutateMemory
     state, stateMutator
 
 let hRegLoad x  (state, (stateMutator: StateMutator)) = 
     let startI = int(state.I)
-    for i = 0 to x do
-        state.V.[i] <- state.Memory.[startI + i]
+    let mutateRegister = mutateArray (fun v ->
+        for i = 0 to x do
+            v.[i] <- state.Memory.[startI + i]
+    )
+    stateMutator.VMutator <- mutateRegister
     state, stateMutator

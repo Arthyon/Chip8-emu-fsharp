@@ -1,5 +1,6 @@
 ﻿[<AutoOpen>]
 module Models
+open System.ComponentModel
 
 type Memory = array<uint8>
 type Opcode = uint16
@@ -23,19 +24,29 @@ type State = {
     terminating: bool * string
 }
 
-type StateMutator = 
-    val mutable MemoryMutator: Memory -> Memory
-    val mutable VMutator: array<uint8> -> array<uint8>
-    val mutable pcMutator: uint16 -> uint16
-    val mutable IMutator: uint16 -> uint16
-    val mutable gfxMutator: array<uint8> -> array<uint8>
-    val mutable delayTimerMutator:uint8 -> uint8;
-    val mutable soundTimerMutator: uint8 -> uint8;
-    val mutable stackMutator: array<uint16> -> array<uint16>;
-    val mutable spMutator: uint16 -> uint16;
-    val mutable frameTypeMutator: FrameType -> FrameType;
-
-
+let passThrough s = s
+type StateMutator () = 
+    member val MemoryMutator: Memory -> Memory = passThrough with get,set
+    member val VMutator: array<uint8> -> array<uint8> = passThrough with get,set
+    member val pcMutator: uint16 -> uint16 = passThrough with get,set
+    member val IMutator: uint16 -> uint16 = passThrough with get,set
+    member val gfxMutator: array<uint8> -> array<uint8> = passThrough with get,set
+    member val delayTimerMutator:uint8 -> uint8 = passThrough with get,set
+    member val soundTimerMutator: uint8 -> uint8 = passThrough with get,set
+    member val stackMutator: array<uint16> -> array<uint16> = passThrough with get,set
+    member val spMutator: uint16 -> uint16 = passThrough with get,set
+    member val frameTypeMutator: FrameType -> FrameType = passThrough with get,set
+    member this.Reset () =
+        this.MemoryMutator <- passThrough
+        this.VMutator <- passThrough
+        this.pcMutator <- passThrough
+        this.IMutator <- passThrough
+        this.gfxMutator <- passThrough
+        this.delayTimerMutator <- passThrough
+        this.soundTimerMutator <- passThrough
+        this.stackMutator <- passThrough
+        this.spMutator <- passThrough
+        this.frameTypeMutator <- passThrough
 
 type Command =
 | JumpToSubroutine of uint16

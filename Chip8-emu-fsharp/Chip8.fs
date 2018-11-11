@@ -130,19 +130,6 @@ let UpdateTimers (state, (stateMutator: StateMutator)) =
     stateMutator.soundTimerMutator <- stateMutator.soundTimerMutator >> (fun t -> Math.Max(0uy, state.soundTimer - 1uy))
     state, stateMutator
 
-let passThrough s = s
-let ResetStateMutator (stateMutator: StateMutator) =
-    stateMutator.MemoryMutator <- passThrough
-    stateMutator.VMutator <- passThrough
-    stateMutator.pcMutator <- passThrough
-    stateMutator.IMutator <- passThrough
-    stateMutator.gfxMutator <- passThrough
-    stateMutator.delayTimerMutator <- passThrough
-    stateMutator.soundTimerMutator <- passThrough
-    stateMutator.stackMutator <- passThrough
-    stateMutator.spMutator <- passThrough
-    stateMutator.frameTypeMutator <- passThrough
-    stateMutator
 
 let UpdateState (state, (stateMutator: StateMutator))  =
     { 
@@ -157,11 +144,12 @@ let UpdateState (state, (stateMutator: StateMutator))  =
         sp = stateMutator.spMutator state.sp;
         frameType = stateMutator.frameTypeMutator state.frameType;
         terminating = state.terminating
-    }, ResetStateMutator stateMutator
+    }, stateMutator
 
 
-let EmulateCycle state keys logger stateMutator =
-    let stateTup = ResetStateMutator stateMutator |> ResetFrameType state
+let EmulateCycle state keys logger (stateMutator: StateMutator) =
+    stateMutator.Reset()
+    let stateTup = stateMutator |> ResetFrameType state
     state 
         |> FetchOpcode 
         |> DecodeOpCode keys
