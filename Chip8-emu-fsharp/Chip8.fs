@@ -126,7 +126,7 @@ let ResetFrameType state (stateMutator: StateMutator) =
 
 let UpdateTimers (state, (stateMutator: StateMutator)) =
     stateMutator.delayTimerMutator <- stateMutator.delayTimerMutator >> (fun t -> Math.Max(0uy, t - 1uy))
-    stateMutator.soundTimerMutator <- stateMutator.soundTimerMutator >> (fun t -> Math.Max(0uy, state.soundTimer - 1uy))
+    stateMutator.soundTimerMutator <- stateMutator.soundTimerMutator >> (fun t -> Math.Max(0uy, t - 1uy))
     state, stateMutator
 
 
