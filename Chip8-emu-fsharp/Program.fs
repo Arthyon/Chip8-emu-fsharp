@@ -13,9 +13,8 @@ let StepGameLoop (previousStates: State list) input logger mutator state =
                             | head::tail    ->  tail, head, mutator
                             | []            ->  previousStates, state, mutator
 
-let InitEmu bytes logger =
+let InitEmu bytes logger mutator =
     let initialState = Initialization.Initialize bytes
     let initialInput = Initialization.initialInput
-    let mutator = new StateMutator()
 
     initialState |> StepGameLoop [] initialInput logger mutator

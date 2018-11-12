@@ -15,6 +15,7 @@ namespace EmuGui
 
         let mutable currentState = None
         let mutable previousStates = []
+        let mutator = new StateMutator()
 
         let updateStatus (statusMsg: string) =
             Electron.IpcMain.Send(mainWindow, "status", statusMsg)
@@ -36,7 +37,7 @@ namespace EmuGui
         let updateState currentKeys =
             match currentState with
             | None      ->  updateStatus "Emu not initialized"
-            | Some s    ->  let prevStates, newState = StepGameLoop previousStates currentKeys console s
+            | Some s    ->  let prevStates, newState, _ = StepGameLoop previousStates currentKeys console mutator s
                             if fst newState.terminating 
                             then
                                 ()
@@ -72,7 +73,7 @@ namespace EmuGui
             updateStatus "Initializing"
             Electron.IpcMain.RemoveAllListeners("tick");
             Electron.IpcMain.On("tick", fun args -> updateState (toKeyInput args))
-            let prevStates, state = InitEmu bytes console
+            let prevStates, state, _ = InitEmu bytes console mutator
             currentState <- Some state
             previousStates <- prevStates
             updateStatus "Running"

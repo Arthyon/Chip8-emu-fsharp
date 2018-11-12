@@ -148,16 +148,16 @@ let hBitOr x y  (state, (stateMutator: StateMutator)) =
 
 let hBitshiftLeft x  (state, (stateMutator: StateMutator)) = 
     let mutateRegister = mutateArray (fun v ->
-        v.[x] <- v.[x] <<< 1
         v.[0xF] <- v.[x] >>> 7
+        v.[x] <- v.[x] <<< 1
     )
     stateMutator.VMutator <- mutateRegister
     state, stateMutator
 
 let hBitshiftRight x  (state, (stateMutator: StateMutator)) = 
     let mutateRegister = mutateArray (fun v ->
-        v.[x] <- v.[x] >>> 1
         v.[0xF] <- v.[x] &&& 1uy
+        v.[x] <- v.[x] >>> 1
     )
     stateMutator.VMutator <- mutateRegister
     state, stateMutator

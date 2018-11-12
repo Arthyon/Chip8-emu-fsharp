@@ -3,7 +3,6 @@
 open System
 open OpcodeHandler
 
-// TODO Check if bitshift is correct here
 let toY opcode =
     int32((opcode &&& 0x00F0us) >>> 4)
 let toX opcode =
