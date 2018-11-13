@@ -6,29 +6,12 @@ let mutateArray mutator arr =
     newArray
     
     
-
-let mutateRegister state =
-    let reg = Array.copy state.V
-    { state with V = reg }
-
-let mutateGfx state =
-    let gfx = Array.copy state.gfx
-    { state with gfx = gfx }
-
-let mutateStack state =
-    let stack = Array.copy state.stack
-    { state with stack = stack }
-
-let mutateMemory state =
-    let mem = Array.copy state.Memory
-    { state with Memory = mem }
-
 let redraw (state, (stateMutator: StateMutator)) =
     stateMutator.frameTypeMutator <- (fun _ -> FrameType.Drawable)
     state, stateMutator
 
 let incrementPc (state, (stateMutator: StateMutator)) =
-    stateMutator.pcMutator <- (fun t -> t + 2us)
+    stateMutator.pcMutator <- stateMutator.pcMutator >> (fun t -> t + 2us)
     state, stateMutator
 
 

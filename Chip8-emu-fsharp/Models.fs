@@ -1,6 +1,5 @@
 ﻿[<AutoOpen>]
 module Models
-open System.ComponentModel
 
 type Memory = array<uint8>
 type Opcode = uint16
@@ -21,7 +20,7 @@ type State = {
     stack: array<uint16>; // 16
     sp: uint16;
     frameType: FrameType;
-    terminating: bool * string
+    terminating: bool * string;
 }
 
 let passThrough s = s

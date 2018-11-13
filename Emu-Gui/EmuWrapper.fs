@@ -25,7 +25,7 @@ namespace EmuGui
 
         let draw (state: State) =
             let mappedState = state.gfx |> Seq.map (fun p -> if p = 1uy then 255 else 0) |> Seq.toArray
-            Electron.IpcMain.Send(mainWindow, "update-gfx",  mappedState)
+            Electron.IpcMain.Send(mainWindow, "update-gfx", mappedState)
         
         let tryPlaySound state =
             if state.soundTimer = 1uy 

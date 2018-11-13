@@ -10,6 +10,22 @@ let initialState = Initialization.Initialization.Initialize [||]
 let getStateMutator () = new StateMutator()
 
 
+let mutateRegister state =
+    let reg = Array.copy state.V
+    { state with V = reg }
+
+let mutateGfx state =
+    let gfx = Array.copy state.gfx
+    { state with gfx = gfx }
+
+let mutateStack state =
+    let stack = Array.copy state.stack
+    { state with stack = stack }
+
+let mutateMemory state =
+    let mem = Array.copy state.Memory
+    { state with Memory = mem }
+
 [<Fact>]
 let ``SetIndex. Sets I to val, increments pc`` () =
     ExecuteCommand (initialState, getStateMutator ()) logger (SetIndex 0xF64us)

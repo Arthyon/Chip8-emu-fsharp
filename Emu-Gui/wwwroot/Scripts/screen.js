@@ -8,6 +8,7 @@
 
 function setPixelLinear(imageData, pos, val) {
     var index = pos * 4;
+    //const pixelVal = val === 0 ? 0 : 255;
     imageData.data[index] = val;
     imageData.data[index + 1] = val;
     imageData.data[index + 2] = val;

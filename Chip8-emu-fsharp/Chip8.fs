@@ -79,8 +79,8 @@ let DecodeOpCode keys (opcode: Opcode) =
     | 0xD000us -> DrawSprite (toXYI opcode)
     | _        -> DecodeNestedOpCode opcode keys
 
-let ExecuteCommand (state, stateMutator) logger command =
-    sprintf "%A" command |> logger
+let ExecuteCommand (state, stateMutator) _ command =
+    //sprintf "%A" command |> logger
     match command with
     | SetIndex idx                  -> hSetIndex idx >> incrementPc
     | Jump value                    -> hJump value

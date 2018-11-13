@@ -48,11 +48,12 @@ function run(timestamp) {
 }
 ipcRenderer.on('failure', (event, arg) => {
     isPaused = true;
-    document.getElementById('fail').innerHTML = arg;
+    alert(arg);
+    //document.getElementById('fail').innerHTML = arg;
 
 });
 ipcRenderer.on('status', (event, arg) => {
-    document.getElementById('status').innerHTML = arg;
+    //document.getElementById('status').innerHTML = arg;
 });
 ipcRenderer.on('console', (event, arg) => {
     console.log(arg);
