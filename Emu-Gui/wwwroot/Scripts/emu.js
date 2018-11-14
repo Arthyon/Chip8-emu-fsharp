@@ -8,7 +8,7 @@ var now,
 var isPaused = true;
 var rewind = false;
 
-
+var audio = new AudioContext();
 document.addEventListener('keydown', (event) => {
     const res = handleInput(event.key, 1);
     if (res.pauseButton) {
@@ -49,29 +49,28 @@ function run(timestamp) {
 ipcRenderer.on('failure', (event, arg) => {
     isPaused = true;
     alert(arg);
-    //document.getElementById('fail').innerHTML = arg;
 
 });
 ipcRenderer.on('status', (event, arg) => {
-    //document.getElementById('status').innerHTML = arg;
+    console.log(arg);
 });
 ipcRenderer.on('console', (event, arg) => {
     console.log(arg);
-
 });
 
 ipcRenderer.on('beep', (event, arg) => {
-    document.getElementById('beep').innerHTML = "BEEP";
-    setTimeout(() => document.getElementById('beep').innerHTML = "", 500);
+    var o = audio.createOscillator();
+    var g = audio.createGain();
+    o.type = "square";
+    o.connect(g);
+    o.frequency.value = 440;
+    g.connect(audio.destination);
+    o.start(0);
+    g.gain.exponentialRampToValueAtTime(0.00001, audio.currentTime + 0.08)
 });
 
-// ipcRenderer.on('endBeep', (event, arg) => {
-//     document.getElementById('beep').innerHTML = "";
-// });
-
 ipcRenderer.on('start', (event, arg) => {
-    isPaused = true;
-    // start();
+     start();
 });
 
 ipcRenderer.on('update-gfx', (event, arg) => {
